@@ -11,6 +11,23 @@ Clean code:
 * doesn't contain duplication
 * is easier and cheaper to maintain
 
+### Code Bed smells
+
+* Dead code
+* Speculative Generality - no need “what if?”
+* Large classes
+* God object
+* Multiple languages in one file
+* Framework core modifications
+* Magic numbers - replace with const or var
+* Long if conditions - replace with function
+* Call super’s overwritten methods
+* Circular dependency
+* Circular references
+* Sequential coupling
+* Hard-coding
+* Too much inheritance - composition is better than inheritance
+
 ### Notes
 
 1. [Shubham Gupta - How to write clean code? Lessons learnt from “The Clean Code”](./notes/Mindworks.md)
