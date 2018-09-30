@@ -1,4 +1,6 @@
-# Medium.com - Mindorks blog
+# How to write clean code? Lessons learnt from "The Clean Code"
+
+**Medium.com - Mindworks blog**
 
 | | |
 | - | - |
