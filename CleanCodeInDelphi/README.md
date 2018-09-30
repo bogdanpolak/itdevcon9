@@ -9,3 +9,4 @@
 1. [Shubham Gupta - How to write clean code? Lessons learnt from “The Clean Code”](./notes/Mindworks.md)
 2. [Clean Code in a nutshell - wojteklu @ GitHubGist](https://gist.github.com/wojteklu/73c6914cc446146b8b533c0988cf8d29)
 3. [Clean Code - Robert C. Martin's Way](./notes/DZone.md)
+4. [Forget about Clean Code, let’s embrace Compassionate Code](./notes/BiggerBox.md)
