@@ -49,6 +49,27 @@ Now when I say to reduce a function size, you would definitely think how to redu
 
 https://gist.github.com/shubham171294/ecb9cb35e21b4a1bcb25ea0310ddd3e1
 
+```java
+public void delete(Page page) { 
+  try {
+     deletePageAndAllReferences(page);
+  }
+  catch (Exception e) { 
+    logError(e);
+  } 
+}
+
+private void deletePageAndAllReferences(Page page) throws Exception { 
+    deletePage(page);
+    registry.deleteReference(page.name); 
+    configKeys.deleteKey(page.name.makeKey());
+}
+
+private void logError(Exception e) { 
+    logger.log(e.getMessage());
+}
+```
+
 This makes the logic crystal clear. Function names easily describe what we are trying to achieve. Error handling can be ignored. This provides a nice separation that makes the code easier to understand and modify.
 
 Error Handling is one thing — Function should do one thing. Error handling is one another thing. If a function has try keyword then it should be the very first keyword and there should be nothing after the catch/finally blocks.
@@ -69,9 +90,71 @@ These 2 things are completely different. One is just about storing data and othe
 
 https://gist.github.com/shubham171294/f69cf5dc9942d7df47b584903dea5c83
 
+```java
+public class Square { 
+  public Point topLeft;
+  public double side;
+}
+
+public class Rectangle { 
+  public Point topLeft; 
+  public double height; 
+  public double width;
+}
+
+public class Circle { 
+  public Point center;
+  public double radius;
+}
+
+public class Geometry {
+  public final double PI = 3.141592653589793;
+  public double area(Object shape) throws NoSuchShapeException {
+    if (shape instanceof Square) { 
+        Square s = (Square)shape; 
+        return s.side * s.side;
+    } else if (shape instanceof Rectangle) {
+        Rectangle r = (Rectangle)shape; 
+        return r.height * r.width;
+    } else if (shape instanceof Circle) {
+        Circle c = (Circle)shape;
+        return PI * c.radius * c.radius;
+    }
+        throw new NoSuchShapeException();
+    }
+}
+```
+
 Consider what would happen if a perimeter() function were added to Geometry. The shape classes would be unaffected! Any other classes that depended upon the shapes would also be unaffected! On the other hand, if I add a new shape, I must change all the functions in Geometry to deal with it. Again, read that over. Notice that the two conditions are diametrically opposed.
 
 https://gist.github.com/shubham171294/cbdf262914bf9219154112ce01428d6b
+
+```java
+public class Square implements Shape {
+  private Point topLeft;
+  private double side;
+  public double area() { 
+    return side*side;
+  } 
+}
+
+public class Rectangle implements Shape { 
+  private Point topLeft;
+  private double height;
+  private double width;
+  public double area() { 
+    return height * width;
+  } 
+}
+
+public class Circle implements Shape {
+  private Point center;
+  private double radius;
+  public final double PI = 3.141592653589793;
+  public double area() {
+    return PI * radius * radius;
+  } 
+}```
 
 Now consider another approach for the above scenario.
 
