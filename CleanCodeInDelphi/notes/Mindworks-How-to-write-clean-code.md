@@ -47,7 +47,7 @@ A function shouldn’t have more than 3 arguments. Keep it as low as possible. W
 
 Now when I say to reduce a function size, you would definitely think how to reduce try-catch as it already makes your code so much bigger. My answer is make a function containing just the try-catch-finally statements. And separate the bodies of try/catch/finally block in a separate functions. Eg-
 
-<script src="https://gist.github.com/shubham171294/ecb9cb35e21b4a1bcb25ea0310ddd3e1.js"></script>
+https://gist.github.com/shubham171294/ecb9cb35e21b4a1bcb25ea0310ddd3e1
 
 This makes the logic crystal clear. Function names easily describe what we are trying to achieve. Error handling can be ignored. This provides a nice separation that makes the code easier to understand and modify.
 
@@ -67,11 +67,11 @@ Objects hide their data behind abstractions and expose functions that operate on
 
 These 2 things are completely different. One is just about storing data and other is how to manipulate that data. Consider, for example, the procedural shape example below. The Geometry class operates on the three shape classes. The shape classes are simple data structures without any behavior. All the behavior is in the Geometry class.
 
-<script src="https://gist.github.com/shubham171294/f69cf5dc9942d7df47b584903dea5c83.js"></script>
+https://gist.github.com/shubham171294/f69cf5dc9942d7df47b584903dea5c83
 
 Consider what would happen if a perimeter() function were added to Geometry. The shape classes would be unaffected! Any other classes that depended upon the shapes would also be unaffected! On the other hand, if I add a new shape, I must change all the functions in Geometry to deal with it. Again, read that over. Notice that the two conditions are diametrically opposed.
 
-<script src="https://gist.github.com/shubham171294/cbdf262914bf9219154112ce01428d6b.js"></script>
+https://gist.github.com/shubham171294/cbdf262914bf9219154112ce01428d6b
 
 Now consider another approach for the above scenario.
 
