@@ -11,6 +11,7 @@ object Form1: TForm1
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object pnMain: TPanel
@@ -23,10 +24,6 @@ object Form1: TForm1
     BevelOuter = bvNone
     Caption = 'pnMain'
     TabOrder = 0
-    ExplicitLeft = 192
-    ExplicitTop = 39
-    ExplicitWidth = 432
-    ExplicitHeight = 485
     object ChromeTabs1: TChromeTabs
       AlignWithMargins = True
       Left = 3
@@ -353,7 +350,6 @@ object Form1: TForm1
       LookAndFeel.ScrollButtons.Arrow.Disabled.OutlineAlpha = 200
       Align = alTop
       TabOrder = 0
-      ExplicitWidth = 785
     end
   end
   object GroupBox1: TGroupBox
@@ -369,24 +365,22 @@ object Form1: TForm1
     Padding.Left = 2
     Padding.Right = 2
     TabOrder = 1
-    ExplicitLeft = 4
-    ExplicitTop = 3
-    ExplicitHeight = 478
     object lbTitleFilesToAdd: TLabel
       AlignWithMargins = True
       Left = 7
-      Top = 21
+      Top = 52
       Width = 176
       Height = 13
       Margins.Top = 6
       Margins.Bottom = 0
       Align = alTop
       Caption = 'Dodawne (folder add):'
+      ExplicitTop = 21
       ExplicitWidth = 109
     end
     object Splitter1: TSplitter
       Left = 4
-      Top = 153
+      Top = 184
       Width = 182
       Height = 7
       Cursor = crVSplit
@@ -397,38 +391,57 @@ object Form1: TForm1
     object lbTitleFilesToRemove: TLabel
       AlignWithMargins = True
       Left = 7
-      Top = 160
+      Top = 191
       Width = 176
       Height = 13
       Margins.Top = 0
       Margins.Bottom = 0
       Align = alTop
       Caption = 'Usuwane (folder remove):'
-      ExplicitTop = 261
+      ExplicitTop = 160
       ExplicitWidth = 126
     end
     object lbxFilesToAdd: TListBox
       AlignWithMargins = True
       Left = 7
-      Top = 37
+      Top = 68
       Width = 176
       Height = 116
       Margins.Bottom = 0
       Align = alTop
       ItemHeight = 13
       TabOrder = 0
+      ExplicitTop = 37
     end
     object lbxFilesToRemove: TListBox
       AlignWithMargins = True
       Left = 7
-      Top = 176
+      Top = 207
       Width = 176
-      Height = 244
+      Height = 213
       Align = alClient
       ItemHeight = 13
       TabOrder = 1
-      ExplicitTop = 277
-      ExplicitHeight = 196
+      ExplicitTop = 176
+      ExplicitHeight = 244
     end
+    object Button1: TButton
+      AlignWithMargins = True
+      Left = 7
+      Top = 18
+      Width = 176
+      Height = 25
+      Align = alTop
+      Caption = 'Button1'
+      TabOrder = 2
+      ExplicitLeft = 5
+      ExplicitTop = 16
+    end
+  end
+  object tmrAppReady: TTimer
+    Interval = 1
+    OnTimer = tmrAppReadyTimer
+    Left = 320
+    Top = 224
   end
 end
