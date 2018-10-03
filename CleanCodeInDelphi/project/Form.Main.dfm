@@ -2,7 +2,7 @@ object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'Form1'
-  ClientHeight = 430
+  ClientHeight = 405
   ClientWidth = 655
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -12,6 +12,7 @@ object Form1: TForm1
   Font.Style = []
   OldCreateOrder = False
   OnCreate = FormCreate
+  OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
   object pnMain: TPanel
@@ -19,11 +20,12 @@ object Form1: TForm1
     Left = 196
     Top = 3
     Width = 456
-    Height = 424
+    Height = 399
     Align = alClient
     BevelOuter = bvNone
     Caption = 'pnMain'
     TabOrder = 0
+    ExplicitHeight = 424
     object ChromeTabs1: TChromeTabs
       AlignWithMargins = True
       Left = 3
@@ -357,14 +359,21 @@ object Form1: TForm1
     Left = 3
     Top = 2
     Width = 190
-    Height = 425
+    Height = 400
     Margins.Top = 2
     Margins.Right = 0
     Align = alLeft
     Caption = 'Pliki:'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
     Padding.Left = 2
     Padding.Right = 2
+    ParentFont = False
     TabOrder = 1
+    ExplicitTop = -3
     object lbTitleFilesToAdd: TLabel
       AlignWithMargins = True
       Left = 7
@@ -375,6 +384,7 @@ object Form1: TForm1
       Margins.Bottom = 0
       Align = alTop
       Caption = 'Dodawne (folder add):'
+      ExplicitTop = 72
       ExplicitWidth = 109
     end
     object Splitter1: TSplitter
@@ -384,6 +394,7 @@ object Form1: TForm1
       Height = 7
       Cursor = crVSplit
       Align = alTop
+      OnMoved = Splitter1Moved
       ExplicitTop = 125
       ExplicitWidth = 190
     end
@@ -415,10 +426,11 @@ object Form1: TForm1
       Left = 7
       Top = 207
       Width = 176
-      Height = 213
+      Height = 188
       Align = alClient
       ItemHeight = 13
       TabOrder = 1
+      ExplicitHeight = 213
     end
     object Button1: TButton
       AlignWithMargins = True

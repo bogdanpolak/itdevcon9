@@ -21,10 +21,13 @@ type
     Button1: TButton;
     tmrAppReady: TTimer;
     procedure FormCreate(Sender: TObject);
+    procedure FormResize(Sender: TObject);
+    procedure Splitter1Moved(Sender: TObject);
     procedure tmrAppReadyTimer(Sender: TObject);
   private
     isDeveloperMode: Boolean;
     isDatabaseOK: Boolean;
+    procedure ResizeGroupBox();
   public
     FDConnection1: TFDConnectionMock;
   end;
@@ -73,11 +76,83 @@ begin
 {$ELSE}
   isDeveloperMode := False;
 {$ENDIF}
+  pnMain.Caption := '';
 end;
 
 function DBVersionToString(VerDB: integer): string;
 begin
   Result := (VerDB div 1000).ToString + '.' + (VerDB mod 1000).ToString;
+end;
+
+procedure TForm1.FormResize(Sender: TObject);
+begin
+  ResizeGroupBox();
+end;
+
+function SumHeightForChildrens(Parent: TWinControl;
+  ControlsToExclude: TArray<TControl>): integer;
+var
+  i: integer;
+  ctrl: Vcl.Controls.TControl;
+  isExcluded: Boolean;
+  j: integer;
+  sumHeight: integer;
+  ctrlHeight: integer;
+begin
+  sumHeight := 0;
+  for i := 0 to Parent.ControlCount - 1 do
+  begin
+    ctrl := Parent.Controls[i];
+    isExcluded := False;
+    for j := 0 to Length(ControlsToExclude) - 1 do
+      if ControlsToExclude[j] = ctrl then
+        isExcluded := True;
+    if not isExcluded then
+    begin
+      if ctrl.AlignWithMargins then
+        ctrlHeight := ctrl.Height + ctrl.Margins.Top + ctrl.Margins.Bottom
+      else
+        ctrlHeight := ctrl.Height;
+      sumHeight := sumHeight + ctrlHeight;
+    end;
+  end;
+  Result := sumHeight;
+end;
+
+procedure TForm1.ResizeGroupBox();
+var
+  sum: integer;
+  total: integer;
+  client: integer;
+  avaliable: integer;
+  labelPixelHeight: integer;
+begin
+  (*
+    sum := lbxFilesToAdd.Height + lbxFilesToRemove.Height;
+    lbxFilesToAdd.Height := sum div 2;
+    lbxFilesToRemove.Height := sum div 2;
+  *)
+  with TBitmap.Create do begin
+    Canvas.Font.Size := GroupBox1.Font.Height;
+    labelPixelHeight := Canvas.TextHeight('Zg');
+    Free;
+  end;
+  sum := SumHeightForChildrens(GroupBox1, [lbxFilesToAdd, lbxFilesToRemove]);
+  avaliable := GroupBox1.Height - sum - labelPixelHeight;
+  if GroupBox1.AlignWithMargins then
+    avaliable := avaliable - GroupBox1.Padding.Top - GroupBox1.Padding.Bottom;
+  if lbxFilesToAdd.AlignWithMargins then
+    avaliable := avaliable - lbxFilesToAdd.Margins.Top -
+      lbxFilesToAdd.Margins.Bottom;
+  if lbxFilesToRemove.AlignWithMargins then
+    avaliable := avaliable - lbxFilesToRemove.Margins.Top -
+      lbxFilesToRemove.Margins.Bottom;
+  lbxFilesToAdd.Height := avaliable div 2;
+end;
+
+procedure TForm1.Splitter1Moved(Sender: TObject);
+begin
+  (Sender as TSplitter).Tag := 1;
 end;
 
 procedure TForm1.tmrAppReadyTimer(Sender: TObject);
