@@ -375,7 +375,6 @@ object Form1: TForm1
       Margins.Bottom = 0
       Align = alTop
       Caption = 'Dodawne (folder add):'
-      ExplicitTop = 21
       ExplicitWidth = 109
     end
     object Splitter1: TSplitter
@@ -398,7 +397,6 @@ object Form1: TForm1
       Margins.Bottom = 0
       Align = alTop
       Caption = 'Usuwane (folder remove):'
-      ExplicitTop = 160
       ExplicitWidth = 126
     end
     object lbxFilesToAdd: TListBox
@@ -411,7 +409,6 @@ object Form1: TForm1
       Align = alTop
       ItemHeight = 13
       TabOrder = 0
-      ExplicitTop = 37
     end
     object lbxFilesToRemove: TListBox
       AlignWithMargins = True
@@ -422,8 +419,6 @@ object Form1: TForm1
       Align = alClient
       ItemHeight = 13
       TabOrder = 1
-      ExplicitTop = 176
-      ExplicitHeight = 244
     end
     object Button1: TButton
       AlignWithMargins = True
@@ -434,8 +429,6 @@ object Form1: TForm1
       Align = alTop
       Caption = 'Button1'
       TabOrder = 2
-      ExplicitLeft = 5
-      ExplicitTop = 16
     end
   end
   object tmrAppReady: TTimer
