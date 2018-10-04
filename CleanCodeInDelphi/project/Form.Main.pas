@@ -7,7 +7,7 @@ uses
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.StdCtrls, Vcl.ExtCtrls,
   ChromeTabs, ChromeTabsClasses, ChromeTabsTypes,
-  Mock.MainForm;
+  Mock.MainForm, Data.DB, Vcl.Grids, Vcl.DBGrids;
 
 type
   TForm1 = class(TForm)
@@ -22,10 +22,10 @@ type
     btnImport: TButton;
     tmrAppReady: TTimer;
     procedure btnImportClick(Sender: TObject);
-    procedure ChromeTabs1ButtonCloseTabClick(Sender: TObject; ATab: TChromeTab; var
-        Close: Boolean);
-    procedure ChromeTabs1Change(Sender: TObject; ATab: TChromeTab; TabChangeType:
-        TTabChangeType);
+    procedure ChromeTabs1ButtonCloseTabClick(Sender: TObject; ATab: TChromeTab;
+      var Close: Boolean);
+    procedure ChromeTabs1Change(Sender: TObject; ATab: TChromeTab;
+      TabChangeType: TTabChangeType);
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure Splitter1Moved(Sender: TObject);
@@ -48,7 +48,7 @@ implementation
 uses
   System.StrUtils, System.JSON,
   Frame.Welcome, Consts.Application, Utils.CipherAES128, Frame.Import,
-  Units.Main, ClientAPI.Contacts;
+  Units.Main, ClientAPI.Contacts, Data.Main;
 
 const
   SQL_SELECT_DatabaseVersion = 'SELECT versionnr FROM DBInfo';
@@ -132,7 +132,11 @@ var
   frm: TFrameImport;
   tab: TChromeTab;
   jsData: TJSONArray;
-  mm: TMemo;
+  dbgrid: TDBGrid;
+  datasrc: TDataSource;
+  i: Integer;
+  row: TJSONObject;
+  email: string;
 begin
   // ----------------------------------------------------------
   // ----------------------------------------------------------
@@ -149,19 +153,27 @@ begin
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
-  // import data from OpenAPI
+  // Import data from OpenAPI
   //
-  jsData := ImportDataFromClientService (Client_API_Token);
-  mm := TMemo.Create(frm);
-  mm.AlignWithMargins := true;
-  mm.Parent := frm;
-  mm.Align := alClient;
-  mm.ScrollBars := ssVertical;
-  mm.Text := jsData.ToString;
+  jsData := ImportDataFromClientService(Client_API_Token);
+  try
+    datasrc := TDataSource.Create(frm);
+    dbgrid := TDBGrid.Create(frm);
+    dbgrid.AlignWithMargins := True;
+    dbgrid.Parent := frm;
+    dbgrid.Align := alClient;
+    dbgrid.DataSource := datasrc;
+    // --------
+    DataModMain.LoadContactsFromJSON(jsData);
+    datasrc.DataSet := DataModMain.mtabContacts;
+  finally
+    jsData.Free;
+  end;
+
 end;
 
-procedure TForm1.ChromeTabs1ButtonCloseTabClick(Sender: TObject; ATab:
-    TChromeTab; var Close: Boolean);
+procedure TForm1.ChromeTabs1ButtonCloseTabClick(Sender: TObject;
+  ATab: TChromeTab; var Close: Boolean);
 var
   obj: TObject;
 begin
@@ -170,7 +182,7 @@ begin
 end;
 
 procedure TForm1.ChromeTabs1Change(Sender: TObject; ATab: TChromeTab;
-    TabChangeType: TTabChangeType);
+  TabChangeType: TTabChangeType);
 var
   obj: TObject;
 begin
@@ -188,8 +200,6 @@ end;
 procedure TForm1.ResizeGroupBox();
 var
   sum: integer;
-  total: integer;
-  client: integer;
   avaliable: integer;
   labelPixelHeight: integer;
 begin
@@ -198,7 +208,8 @@ begin
     lbxFilesToAdd.Height := sum div 2;
     lbxFilesToRemove.Height := sum div 2;
   *)
-  with TBitmap.Create do begin
+  with TBitmap.Create do
+  begin
     Canvas.Font.Size := GroupBox1.Font.Height;
     labelPixelHeight := Canvas.TextHeight('Zg');
     Free;
@@ -232,6 +243,7 @@ var
   res: Variant;
 begin
   tmrAppReady.Enabled := False;
+  ReportMemoryLeaksOnShutdown := True;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //

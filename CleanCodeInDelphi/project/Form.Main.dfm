@@ -440,6 +440,7 @@ object Form1: TForm1
       Caption = 'btnImport'
       TabOrder = 2
       OnClick = btnImportClick
+      ExplicitLeft = 5
     end
   end
   object tmrAppReady: TTimer
