@@ -46,7 +46,7 @@ implementation
 {$R *.dfm}
 
 uses
-  System.StrUtils, System.JSON,
+  System.StrUtils, System.JSON, System.Math,
   Frame.Welcome, Consts.Application, Utils.CipherAES128, Frame.Import,
   Units.Main, ClientAPI.Contacts, Data.Main;
 
@@ -127,16 +127,64 @@ begin
   Result := sumHeight;
 end;
 
+function AutoSizeColumns(DBGrid: TDBGrid; const MaxRows: integer = 25): integer;
+
+var
+  DataSet: TDataSet;
+  Bookmark: TBookmark;
+  Count, i: integer;
+  ColumnsWidth: array of integer;
+begin
+  SetLength(ColumnsWidth, DBGrid.Columns.Count);
+  for i := 0 to DBGrid.Columns.Count - 1 do
+    if DBGrid.Columns[i].Visible then
+      ColumnsWidth[i] := DBGrid.Canvas.TextWidth
+        (DBGrid.Columns[i].Title.Caption + '   ')
+    else
+      ColumnsWidth[i] := 0;
+  if DBGrid.DataSource <> nil then
+    DataSet := DBGrid.DataSource.DataSet
+  else
+    DataSet := nil;
+  if (DataSet <> nil) and DataSet.Active then
+  begin
+    Bookmark := DataSet.GetBookmark;
+    DataSet.DisableControls;
+    try
+      Count := 0;
+      DataSet.First;
+      while not DataSet.Eof and (Count < MaxRows) do
+      begin
+        for i := 0 to DBGrid.Columns.Count - 1 do
+          if DBGrid.Columns[i].Visible then
+            ColumnsWidth[i] := Max(ColumnsWidth[i],
+              DBGrid.Canvas.TextWidth(DBGrid.Columns[i].Field.Text + '   '));
+        Inc(Count);
+        DataSet.Next;
+      end;
+    finally
+      DataSet.GotoBookmark(Bookmark);
+      DataSet.FreeBookmark(Bookmark);
+      DataSet.EnableControls;
+    end;
+  end;
+  Count := 0;
+  for i := 0 to DBGrid.Columns.Count - 1 do
+    if DBGrid.Columns[i].Visible then
+    begin
+      DBGrid.Columns[i].Width := ColumnsWidth[i];
+      Inc(Count, ColumnsWidth[i]);
+    end;
+  Result := Count - DBGrid.ClientWidth;
+end;
+
 procedure TForm1.btnImportClick(Sender: TObject);
 var
   frm: TFrameImport;
   tab: TChromeTab;
   jsData: TJSONArray;
-  dbgrid: TDBGrid;
+  DBGrid: TDBGrid;
   datasrc: TDataSource;
-  i: Integer;
-  row: TJSONObject;
-  email: string;
 begin
   // ----------------------------------------------------------
   // ----------------------------------------------------------
@@ -158,14 +206,15 @@ begin
   jsData := ImportDataFromClientService(Client_API_Token);
   try
     datasrc := TDataSource.Create(frm);
-    dbgrid := TDBGrid.Create(frm);
-    dbgrid.AlignWithMargins := True;
-    dbgrid.Parent := frm;
-    dbgrid.Align := alClient;
-    dbgrid.DataSource := datasrc;
+    DBGrid := TDBGrid.Create(frm);
+    DBGrid.AlignWithMargins := True;
+    DBGrid.Parent := frm;
+    DBGrid.Align := alClient;
+    DBGrid.DataSource := datasrc;
     // --------
     DataModMain.LoadContactsFromJSON(jsData);
     datasrc.DataSet := DataModMain.mtabContacts;
+    AutoSizeColumns(DBGrid);
   finally
     jsData.Free;
   end;
