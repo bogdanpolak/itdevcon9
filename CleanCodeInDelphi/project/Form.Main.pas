@@ -46,15 +46,16 @@ implementation
 {$R *.dfm}
 
 uses
-  System.StrUtils,
+  System.StrUtils, System.JSON,
   Frame.Welcome, Consts.Application, Utils.CipherAES128, Frame.Import,
-  Units.Main;
+  Units.Main, ClientAPI.Contacts;
 
 const
   SQL_SELECT_DatabaseVersion = 'SELECT versionnr FROM DBInfo';
   SecureKey = 'delphi-is-the-best';
   // SecurePassword = AES 128 ('masterkey',SecureKey)
   SecurePassword = 'hC52IiCv4zYQY2PKLlSvBaOXc14X41Mc1rcVS6kyr3M=';
+  Client_API_Token = '20be805d-9cea27e2-a588efc5-1fceb84d-9fb4b67c';
 
 resourcestring
   SWelcomeScreen = 'Ekran powitalny';
@@ -130,6 +131,8 @@ procedure TForm1.btnImportClick(Sender: TObject);
 var
   frm: TFrameImport;
   tab: TChromeTab;
+  jsData: TJSONArray;
+  mm: TMemo;
 begin
   // ----------------------------------------------------------
   // ----------------------------------------------------------
@@ -143,6 +146,18 @@ begin
   tab := ChromeTabs1.Tabs.Add;
   tab.Caption := 'Import';
   tab.Data := frm;
+  // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  //
+  // import data from OpenAPI
+  //
+  jsData := ImportDataFromClientService (Client_API_Token);
+  mm := TMemo.Create(frm);
+  mm.AlignWithMargins := true;
+  mm.Parent := frm;
+  mm.Align := alClient;
+  mm.ScrollBars := ssVertical;
+  mm.Text := jsData.ToString;
 end;
 
 procedure TForm1.ChromeTabs1ButtonCloseTabClick(Sender: TObject; ATab:
