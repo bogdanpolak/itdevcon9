@@ -25,7 +25,6 @@ object Form1: TForm1
     BevelOuter = bvNone
     Caption = 'pnMain'
     TabOrder = 0
-    ExplicitHeight = 424
     object ChromeTabs1: TChromeTabs
       AlignWithMargins = True
       Left = 3
@@ -373,7 +372,6 @@ object Form1: TForm1
     Padding.Right = 2
     ParentFont = False
     TabOrder = 1
-    ExplicitTop = -3
     object lbTitleFilesToAdd: TLabel
       AlignWithMargins = True
       Left = 7
@@ -384,7 +382,6 @@ object Form1: TForm1
       Margins.Bottom = 0
       Align = alTop
       Caption = 'Dodawne (folder add):'
-      ExplicitTop = 72
       ExplicitWidth = 109
     end
     object Splitter1: TSplitter
@@ -430,17 +427,17 @@ object Form1: TForm1
       Align = alClient
       ItemHeight = 13
       TabOrder = 1
-      ExplicitHeight = 213
     end
-    object Button1: TButton
+    object btnImport: TButton
       AlignWithMargins = True
       Left = 7
       Top = 18
       Width = 176
       Height = 25
       Align = alTop
-      Caption = 'Button1'
+      Caption = 'btnImport'
       TabOrder = 2
+      OnClick = btnImportClick
     end
   end
   object tmrAppReady: TTimer

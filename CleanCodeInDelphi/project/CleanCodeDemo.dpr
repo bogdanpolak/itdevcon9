@@ -6,7 +6,8 @@ uses
   Frame.Welcome in 'Frame.Welcome.pas' {FrameWelcome: TFrame},
   Mock.MainForm in 'Mock.MainForm.pas',
   Consts.Application in 'Consts.Application.pas',
-  Utils.CipherAES128 in 'Utils.CipherAES128.pas';
+  Utils.CipherAES128 in 'Utils.CipherAES128.pas',
+  Frame.Import in 'Frame.Import.pas' {FrameImport: TFrame};
 
 {$R *.res}
 

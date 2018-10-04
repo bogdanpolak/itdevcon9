@@ -18,8 +18,9 @@ type
     lbxFilesToRemove: TListBox;
     ChromeTabs1: TChromeTabs;
     pnMain: TPanel;
-    Button1: TButton;
+    btnImport: TButton;
     tmrAppReady: TTimer;
+    procedure btnImportClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure Splitter1Moved(Sender: TObject);
@@ -41,7 +42,7 @@ implementation
 
 uses
   System.StrUtils,
-  Frame.Welcome, Consts.Application, Utils.CipherAES128;
+  Frame.Welcome, Consts.Application, Utils.CipherAES128, Frame.Import;
 
 const
   SQL_SELECT_DatabaseVersion = 'SELECT versionnr FROM DBInfo';
@@ -117,6 +118,25 @@ begin
     end;
   end;
   Result := sumHeight;
+end;
+
+procedure TForm1.btnImportClick(Sender: TObject);
+var
+  frm: TFrameImport;
+  tab: TChromeTab;
+begin
+  // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  //
+  // Create and show Import Frame
+  //
+  frm := TFrameImport.Create(pnMain);
+  frm.Parent := pnMain;
+  frm.Visible := True;
+  frm.Align := alClient;
+  tab := ChromeTabs1.Tabs.Add;
+  tab.Caption := 'Import';
+  tab.Data := frm;
 end;
 
 procedure TForm1.ResizeGroupBox();
