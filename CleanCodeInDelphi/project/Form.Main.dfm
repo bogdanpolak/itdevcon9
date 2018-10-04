@@ -31,6 +31,8 @@ object Form1: TForm1
       Top = 3
       Width = 450
       Height = 30
+      OnChange = ChromeTabs1Change
+      OnButtonCloseTabClick = ChromeTabs1ButtonCloseTabClick
       ActiveTabIndex = -1
       Options.Display.CloseButton.Offsets.Vertical = 6
       Options.Display.CloseButton.Offsets.Horizontal = 2

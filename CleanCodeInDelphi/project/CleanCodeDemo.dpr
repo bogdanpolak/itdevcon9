@@ -7,7 +7,8 @@ uses
   Mock.MainForm in 'Mock.MainForm.pas',
   Consts.Application in 'Consts.Application.pas',
   Utils.CipherAES128 in 'Utils.CipherAES128.pas',
-  Frame.Import in 'Frame.Import.pas' {FrameImport: TFrame};
+  Frame.Import in 'Frame.Import.pas' {FrameImport: TFrame},
+  Units.Main in 'Units.Main.pas';
 
 {$R *.res}
 

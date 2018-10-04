@@ -6,7 +6,8 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.StdCtrls, Vcl.ExtCtrls,
-  ChromeTabs, ChromeTabsClasses, Mock.MainForm;
+  ChromeTabs, ChromeTabsClasses, ChromeTabsTypes,
+  Mock.MainForm;
 
 type
   TForm1 = class(TForm)
@@ -21,6 +22,10 @@ type
     btnImport: TButton;
     tmrAppReady: TTimer;
     procedure btnImportClick(Sender: TObject);
+    procedure ChromeTabs1ButtonCloseTabClick(Sender: TObject; ATab: TChromeTab; var
+        Close: Boolean);
+    procedure ChromeTabs1Change(Sender: TObject; ATab: TChromeTab; TabChangeType:
+        TTabChangeType);
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure Splitter1Moved(Sender: TObject);
@@ -42,7 +47,8 @@ implementation
 
 uses
   System.StrUtils,
-  Frame.Welcome, Consts.Application, Utils.CipherAES128, Frame.Import;
+  Frame.Welcome, Consts.Application, Utils.CipherAES128, Frame.Import,
+  Units.Main;
 
 const
   SQL_SELECT_DatabaseVersion = 'SELECT versionnr FROM DBInfo';
@@ -137,6 +143,31 @@ begin
   tab := ChromeTabs1.Tabs.Add;
   tab.Caption := 'Import';
   tab.Data := frm;
+end;
+
+procedure TForm1.ChromeTabs1ButtonCloseTabClick(Sender: TObject; ATab:
+    TChromeTab; var Close: Boolean);
+var
+  obj: TObject;
+begin
+  obj := TObject(ATab.Data);
+  (obj as TFrame).Free;
+end;
+
+procedure TForm1.ChromeTabs1Change(Sender: TObject; ATab: TChromeTab;
+    TabChangeType: TTabChangeType);
+var
+  obj: TObject;
+begin
+  if Assigned(ATab) then
+  begin
+    obj := TObject(ATab.Data);
+    if (TabChangeType = tcActivated) and Assigned(obj) then
+    begin
+      HideAllChildFrames(pnMain);
+      (obj as TFrame).Visible := True;
+    end;
+  end;
 end;
 
 procedure TForm1.ResizeGroupBox();
