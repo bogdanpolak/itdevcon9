@@ -292,7 +292,8 @@ var
   res: Variant;
 begin
   tmrAppReady.Enabled := False;
-  ReportMemoryLeaksOnShutdown := True;
+  if isDeveloperMode then
+    ReportMemoryLeaksOnShutdown := True;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
@@ -328,7 +329,7 @@ begin
       else
         msg1 := SDBConnectionError
       end;
-      frm.lbxMessages.Items.Add(msg1);
+      frm.AddInfo(0,msg1,true);
       exit;
     end;
   end;
@@ -338,7 +339,7 @@ begin
     on E: EFDDBEngineException do
     begin
       msg1 := IfThen(E.kind = ekObjNotExists, SDBRequireCreate, SDBErrorSelect);
-      frm.lbxMessages.Items.Add(msg1);
+      frm.AddInfo(0,msg1,true);
       exit;
     end;
   end;
@@ -347,11 +348,11 @@ begin
     isDatabaseOK := True
   else
   begin
-    frm.lbxMessages.Items.Add(StrNotSupportedDBVersion);
-    frm.lbxMessages.Items.Add('   * Oczekiwana wersja bazy: ' +
-      DBVersionToString(ExpectedDatabaseVersionNr));
-    frm.lbxMessages.Items.Add('   * Aktualna wersja bazy: ' +
-      DBVersionToString(VersionNr));
+    frm.AddInfo(0,StrNotSupportedDBVersion,true);
+    frm.AddInfo(1,'Oczekiwana wersja bazy: ' +
+      DBVersionToString(ExpectedDatabaseVersionNr),true);
+    frm.AddInfo(1,'Aktualna wersja bazy: ' +
+      DBVersionToString(VersionNr),true);
   end;
   // ----------------------------------------------------------
   // ----------------------------------------------------------

@@ -10,13 +10,17 @@ uses
   Frame.Import in 'Frame.Import.pas' {FrameImport: TFrame},
   Units.Main in 'Units.Main.pas',
   ClientAPI.Contacts in 'ClientAPI.Contacts.pas',
-  Data.Main in 'Data.Main.pas' {DataModMain: TDataModule};
+  Data.Main in 'Data.Main.pas' {DataModMain: TDataModule},
+  Utils.Messages in 'Utils.Messages.pas',
+  Vcl.Themes,
+  Vcl.Styles;
 
 {$R *.res}
 
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
+  TStyleManager.TrySetStyle('Iceberg Classico');
   Application.CreateForm(TForm1, Form1);
   Application.CreateForm(TDataModMain, DataModMain);
   Application.Run;

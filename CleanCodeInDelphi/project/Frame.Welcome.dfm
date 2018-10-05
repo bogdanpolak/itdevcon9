@@ -2,26 +2,14 @@ object FrameWelcome: TFrameWelcome
   Left = 0
   Top = 0
   Width = 320
-  Height = 330
+  Height = 177
   TabOrder = 0
-  object Bevel1: TBevel
+  object Panel1: TPanel
     AlignWithMargins = True
     Left = 3
     Top = 3
     Width = 314
-    Height = 50
-    Align = alTop
-    Shape = bsSpacer
-    ExplicitLeft = 136
-    ExplicitTop = 96
-    ExplicitWidth = 50
-  end
-  object Panel1: TPanel
-    AlignWithMargins = True
-    Left = 3
-    Top = 59
-    Width = 314
-    Height = 102
+    Height = 86
     Align = alTop
     Caption = ' '
     Font.Charset = DEFAULT_CHARSET
@@ -34,10 +22,10 @@ object FrameWelcome: TFrameWelcome
     object lbAppName: TLabel
       AlignWithMargins = True
       Left = 4
-      Top = 21
+      Top = 6
       Width = 306
       Height = 40
-      Margins.Top = 20
+      Margins.Top = 5
       Align = alTop
       Alignment = taCenter
       Caption = 'lbAppName'
@@ -47,13 +35,12 @@ object FrameWelcome: TFrameWelcome
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
-      ExplicitTop = 4
       ExplicitWidth = 166
     end
     object lbAppVersion: TLabel
       AlignWithMargins = True
       Left = 4
-      Top = 67
+      Top = 52
       Width = 306
       Height = 16
       Align = alTop
@@ -61,18 +48,22 @@ object FrameWelcome: TFrameWelcome
       Caption = 'lbAppVersion'
       ExplicitWidth = 75
     end
+    object Bevel1: TBevel
+      AlignWithMargins = True
+      Left = 4
+      Top = 76
+      Width = 306
+      Height = 3
+      Margins.Top = 5
+      Align = alTop
+      Shape = bsTopLine
+      ExplicitTop = 74
+    end
   end
-  object lbxMessages: TListBox
-    AlignWithMargins = True
-    Left = 3
-    Top = 167
-    Width = 314
-    Height = 146
-    Align = alTop
-    BevelKind = bkFlat
-    BorderStyle = bsNone
-    Color = clBtnFace
-    ItemHeight = 13
-    TabOrder = 1
+  object tmrFrameReady: TTimer
+    Interval = 1
+    OnTimer = tmrFrameReadyTimer
+    Left = 40
+    Top = 32
   end
 end
