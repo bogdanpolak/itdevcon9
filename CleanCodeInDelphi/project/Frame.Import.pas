@@ -8,7 +8,6 @@ uses
 
 type
   TFrameImport = class(TFrame)
-    Panel1: TPanel;
     tmrFrameReady: TTimer;
     procedure tmrFrameReadyTimer(Sender: TObject);
   private
@@ -24,7 +23,6 @@ implementation
 procedure TFrameImport.tmrFrameReadyTimer(Sender: TObject);
 begin
   tmrFrameReady.Enabled := False;
-  Panel1.Caption := Self.Name;
 end;
 
 end.
