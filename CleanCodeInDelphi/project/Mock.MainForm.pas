@@ -84,7 +84,7 @@ end;
 
 procedure TFDConnectionMock.Open(const AUserName, APassword: string);
 begin
-
+   self.Open
 end;
 
 { TConnectionDefs }
