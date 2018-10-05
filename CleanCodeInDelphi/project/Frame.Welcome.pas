@@ -3,8 +3,10 @@ unit Frame.Welcome;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
-  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
+  Vcl.StdCtrls,
+  Vcl.ExtCtrls,
   Utils.Messages;
 
 type
@@ -22,7 +24,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    procedure AddInfo (level: integer; const msg:string; show:boolean);
+    procedure AddInfo(level: integer; const Msg: string; show: boolean);
   end;
 
 implementation
@@ -31,12 +33,13 @@ implementation
 
 uses Consts.Application;
 
-procedure TFrameWelcome.AddInfo(level: integer; const msg: string; show:boolean);
+procedure TFrameWelcome.AddInfo(level: integer; const Msg: string;
+  show: boolean);
 var
   obj: TMyMessage;
 begin
   obj := TMyMessage.Create;
-  obj.Text := msg;
+  obj.Text := Msg;
   obj.TagInteger := level;
   obj.TagBoolean := show;
   MessageManager.Add(obj);
@@ -72,11 +75,11 @@ begin
     lbl.Align := alTop;
     lbl.AlignWithMargins := True;
     lbl.Parent := Panel1;
-    if FrameMsg.TagInteger>0 then
-      lbl.Caption := '* '+FrameMsg.Text
+    if FrameMsg.TagInteger > 0 then
+      lbl.Caption := '* ' + FrameMsg.Text
     else
       lbl.Caption := FrameMsg.Text;
-    lbl.Margins.Left := 10 + FrameMsg.TagInteger*20;
+    lbl.Margins.Left := 10 + FrameMsg.TagInteger * 20;
     lbl.Margins.Top := 0;
     lbl.Margins.Bottom := 0;
   end;
