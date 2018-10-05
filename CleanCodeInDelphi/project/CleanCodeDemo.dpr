@@ -20,7 +20,6 @@ uses
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  TStyleManager.TrySetStyle('Iceberg Classico');
   Application.CreateForm(TForm1, Form1);
   Application.CreateForm(TDataModMain, DataModMain);
   Application.Run;
