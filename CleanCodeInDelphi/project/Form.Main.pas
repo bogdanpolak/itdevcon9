@@ -12,11 +12,11 @@ uses
 type
   TForm1 = class(TForm)
     GroupBox1: TGroupBox;
-    lbTitleFilesToAdd: TLabel;
+    lbHistoricalMailing: TLabel;
     Splitter1: TSplitter;
-    lbTitleFilesToRemove: TLabel;
-    lbxFilesToAdd: TListBox;
-    lbxFilesToRemove: TListBox;
+    lbMailingLists: TLabel;
+    lbxHistoricalMailing: TListBox;
+    lbxMailingLists: TListBox;
     ChromeTabs1: TChromeTabs;
     pnMain: TPanel;
     btnImport: TButton;
@@ -263,17 +263,18 @@ begin
     labelPixelHeight := Canvas.TextHeight('Zg');
     Free;
   end;
-  sum := SumHeightForChildrens(GroupBox1, [lbxFilesToAdd, lbxFilesToRemove]);
+  sum := SumHeightForChildrens(GroupBox1, [lbxHistoricalMailing,
+    lbxMailingLists]);
   avaliable := GroupBox1.Height - sum - labelPixelHeight;
   if GroupBox1.AlignWithMargins then
     avaliable := avaliable - GroupBox1.Padding.Top - GroupBox1.Padding.Bottom;
-  if lbxFilesToAdd.AlignWithMargins then
-    avaliable := avaliable - lbxFilesToAdd.Margins.Top -
-      lbxFilesToAdd.Margins.Bottom;
-  if lbxFilesToRemove.AlignWithMargins then
-    avaliable := avaliable - lbxFilesToRemove.Margins.Top -
-      lbxFilesToRemove.Margins.Bottom;
-  lbxFilesToAdd.Height := avaliable div 2;
+  if lbxHistoricalMailing.AlignWithMargins then
+    avaliable := avaliable - lbxHistoricalMailing.Margins.Top -
+      lbxHistoricalMailing.Margins.Bottom;
+  if lbxMailingLists.AlignWithMargins then
+    avaliable := avaliable - lbxMailingLists.Margins.Top -
+      lbxMailingLists.Margins.Bottom;
+  lbxHistoricalMailing.Height := avaliable div 2;
 end;
 
 procedure TForm1.Splitter1Moved(Sender: TObject);
@@ -329,7 +330,8 @@ begin
       else
         msg1 := SDBConnectionError
       end;
-      frm.AddInfo(0,msg1,true);
+      frm.AddInfo(0, msg1, True);
+      frm.AddInfo(1, E.Message, False);
       exit;
     end;
   end;
@@ -339,7 +341,8 @@ begin
     on E: EFDDBEngineException do
     begin
       msg1 := IfThen(E.kind = ekObjNotExists, SDBRequireCreate, SDBErrorSelect);
-      frm.AddInfo(0,msg1,true);
+      frm.AddInfo(0, msg1, True);
+      frm.AddInfo(1, E.Message, False);
       exit;
     end;
   end;
@@ -348,11 +351,11 @@ begin
     isDatabaseOK := True
   else
   begin
-    frm.AddInfo(0,StrNotSupportedDBVersion,true);
-    frm.AddInfo(1,'Oczekiwana wersja bazy: ' +
-      DBVersionToString(ExpectedDatabaseVersionNr),true);
-    frm.AddInfo(1,'Aktualna wersja bazy: ' +
-      DBVersionToString(VersionNr),true);
+    frm.AddInfo(0, StrNotSupportedDBVersion, True);
+    frm.AddInfo(1, 'Oczekiwana wersja bazy: ' +
+      DBVersionToString(ExpectedDatabaseVersionNr), True);
+    frm.AddInfo(1, 'Aktualna wersja bazy: ' + DBVersionToString
+      (VersionNr), True);
   end;
   // ----------------------------------------------------------
   // ----------------------------------------------------------

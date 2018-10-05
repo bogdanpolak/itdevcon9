@@ -364,7 +364,7 @@ object Form1: TForm1
     Margins.Top = 2
     Margins.Right = 0
     Align = alLeft
-    Caption = 'Pliki:'
+    Caption = 'Manager'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
@@ -374,7 +374,7 @@ object Form1: TForm1
     Padding.Right = 2
     ParentFont = False
     TabOrder = 1
-    object lbTitleFilesToAdd: TLabel
+    object lbHistoricalMailing: TLabel
       AlignWithMargins = True
       Left = 7
       Top = 52
@@ -383,12 +383,12 @@ object Form1: TForm1
       Margins.Top = 6
       Margins.Bottom = 0
       Align = alTop
-      Caption = 'Dodawne (folder add):'
-      ExplicitWidth = 109
+      Caption = 'Historical Mailing:'
+      ExplicitWidth = 82
     end
     object Splitter1: TSplitter
       Left = 4
-      Top = 184
+      Top = 204
       Width = 182
       Height = 7
       Cursor = crVSplit
@@ -397,38 +397,40 @@ object Form1: TForm1
       ExplicitTop = 125
       ExplicitWidth = 190
     end
-    object lbTitleFilesToRemove: TLabel
+    object lbMailingLists: TLabel
       AlignWithMargins = True
       Left = 7
-      Top = 191
+      Top = 211
       Width = 176
       Height = 13
       Margins.Top = 0
       Margins.Bottom = 0
       Align = alTop
-      Caption = 'Usuwane (folder remove):'
-      ExplicitWidth = 126
+      Caption = 'Mailing Lists'
+      ExplicitWidth = 56
     end
-    object lbxFilesToAdd: TListBox
+    object lbxHistoricalMailing: TListBox
       AlignWithMargins = True
       Left = 7
       Top = 68
       Width = 176
-      Height = 116
+      Height = 136
       Margins.Bottom = 0
       Align = alTop
       ItemHeight = 13
       TabOrder = 0
     end
-    object lbxFilesToRemove: TListBox
+    object lbxMailingLists: TListBox
       AlignWithMargins = True
       Left = 7
-      Top = 207
+      Top = 227
       Width = 176
-      Height = 188
+      Height = 168
       Align = alClient
       ItemHeight = 13
       TabOrder = 1
+      ExplicitTop = 207
+      ExplicitHeight = 188
     end
     object btnImport: TButton
       AlignWithMargins = True
