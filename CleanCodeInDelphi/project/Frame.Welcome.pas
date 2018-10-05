@@ -79,6 +79,12 @@ begin
       lbl.Caption := '* ' + FrameMsg.Text
     else
       lbl.Caption := FrameMsg.Text;
+    { TODO: Show messages with TagBoolean = false only in DeveloperMode }
+    if FrameMsg.TagBoolean = false then
+    begin
+      lbl.Font.Style := [fsItalic];
+      lbl.Font.Color := clGrayText;
+    end;
     lbl.Margins.Left := 10 + FrameMsg.TagInteger * 20;
     lbl.Margins.Top := 0;
     lbl.Margins.Bottom := 0;
