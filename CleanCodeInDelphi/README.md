@@ -4,6 +4,7 @@
 
 > We all know that the quality of the code has a huge impact on the quality of the project. However, it is difficult to meet two programmers who write the code in a similar way. Uncle Bob (Robert C. Martin) has an interesting approach to this topic and his books are widely recognized as the best guides in this area. During this session, Bogdan will show how to apply uncle Bob's principles in practice. Which ones suit the specificity of component and event based programming in Delphi. You will see mostly the same code.
 
+
 ### Motto
 
 Clean code:
