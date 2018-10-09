@@ -12,15 +12,15 @@
 
 | Element | Sample | Rules |
 | - | - | - |
-| units with code only | Model.Customer.pas | Multi-segment name: [mode info](#naming-units)  |
-| units with components | Form.Customer.pas | Multi-segment name: [mode info](#naming-units)  | 
-| class | TPizza | [CamelCase](#camel-case), capital ```T``` at the beginning  |
-| components | lbxBooks | [CamelCase](#camel-case), capital ```T``` at the beginning  |
-| method | changeState() | [CamelCase](#camel-case) starting with small letter |
-| class attribute | FAppVersion | [CamelCase](#camel-case), capital ```F``` at the beginning |
-| global variables | Form1 | **Warning!** Global variables should be avoided. ([Avoid global variables](#reference))  |
-| local variables | FirstName | [CamelCase](#camel-case) with capital letter |
-| parameters | FirstName | [CamelCase](#camel-case) with capital letter |
+| units with code only | ```Model.Customer.pas``` | Multi-segment name: [mode info](#naming-units)  |
+| units with components | ```Form.Customer.pas``` | Multi-segment name: [mode info](#naming-units)  | 
+| class | ```TPizza``` | [CamelCase](#camel-case), capital ```T``` at the beginning  |
+| components | ```lbxBooks``` | [CamelCase](#camel-case), capital ```T``` at the beginning  |
+| method | ```changeState()``` | [CamelCase](#camel-case) starting with small letter |
+| class attribute | ```FAppVersion``` | [CamelCase](#camel-case), capital ```F``` at the beginning |
+| global variables | ```Form1``` | **Warning!** Global variables should be avoided. ([Avoid global variables](#reference))  |
+| local variables | ```FirstName``` | [CamelCase](#camel-case) with capital letter |
+| parameters | ```FirstName``` | [CamelCase](#camel-case) with capital letter |
 
 ## Naming Units
 
