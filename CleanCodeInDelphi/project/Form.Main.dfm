@@ -418,8 +418,12 @@ object Form1: TForm1
       Height = 136
       Margins.Bottom = 0
       Align = alTop
+      DragMode = dmAutomatic
       ItemHeight = 13
       TabOrder = 0
+      OnDragDrop = lbxBooksDragDrop
+      OnDragOver = lbxBooksDragOver
+      OnStartDrag = lbxBooksStartDrag
     end
     object lbxBooksCooming: TListBox
       AlignWithMargins = True
@@ -428,9 +432,14 @@ object Form1: TForm1
       Width = 176
       Height = 168
       Align = alClient
+      DragMode = dmAutomatic
       ItemHeight = 13
       TabOrder = 1
-      ExplicitLeft = 5
+      OnDragDrop = lbxBooksDragDrop
+      OnDragOver = lbxBooksDragOver
+      OnStartDrag = lbxBooksStartDrag
+      ExplicitLeft = 9
+      ExplicitTop = 229
     end
     object btnImport: TButton
       AlignWithMargins = True

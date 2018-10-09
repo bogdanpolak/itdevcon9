@@ -48,6 +48,11 @@ type
       TabChangeType: TTabChangeType);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormResize(Sender: TObject);
+    procedure lbxBooksStartDrag(Sender: TObject; var DragObject:
+        TDragObject);
+    procedure lbxBooksDragDrop(Sender, Source: TObject; X, Y: Integer);
+    procedure lbxBooksDragOver(Sender, Source: TObject; X, Y: Integer;
+        State: TDragState; var Accept: Boolean);
     procedure Splitter1Moved(Sender: TObject);
     procedure tmrAppReadyTimer(Sender: TObject);
   private
@@ -55,6 +60,7 @@ type
     isDatabaseOK: Boolean;
     AvaliableBooks: TBookCollection;
     CoomingSoonBooks: TBookCollection;
+    DragedIdx: Integer;
     procedure ResizeGroupBox();
   public
     FDConnection1: TFDConnectionMock;
@@ -275,6 +281,46 @@ procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   AvaliableBooks.Free;
   CoomingSoonBooks.Free;
+end;
+
+procedure TForm1.lbxBooksStartDrag(Sender: TObject; var DragObject:
+    TDragObject);
+var
+  lbx: TListBox;
+begin
+  lbx := Sender as TListBox;
+  DragedIdx := lbx.ItemIndex;
+end;
+
+procedure TForm1.lbxBooksDragDrop(Sender, Source: TObject; X, Y:
+    Integer);
+var
+  lbx2: TListBox;
+  lbx1: TListBox;
+  b: TBook;
+  srcList: TBookCollection;
+  dstList: TBookCollection;
+begin
+  lbx1 := Source as TListBox;
+  lbx2 := Sender as TListBox;
+  b := lbx1.Items.Objects[DragedIdx] as TBook;
+  if lbx1=lbxBooksAvaliable then begin
+    srcList := AvaliableBooks;
+    dstList := CoomingSoonBooks;
+  end
+  else begin
+    srcList := CoomingSoonBooks;
+    dstList := AvaliableBooks;
+  end;
+  dstList.Add(srcList.Extract(b));
+  lbx1.Items.Delete(DragedIdx);
+  lbx2.AddItem(b.title, b);
+end;
+
+procedure TForm1.lbxBooksDragOver(Sender, Source: TObject; X, Y:
+    Integer; State: TDragState; var Accept: Boolean);
+begin
+  Accept := (Source is TListBox) and (DragedIdx>=0) and (Sender <> Source);
 end;
 
 procedure TForm1.ResizeGroupBox();
