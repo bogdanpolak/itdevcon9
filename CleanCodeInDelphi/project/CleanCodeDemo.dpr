@@ -13,7 +13,8 @@ uses
   Data.Main in 'Data.Main.pas' {DataModMain: TDataModule},
   Utils.Messages in 'Utils.Messages.pas',
   Vcl.Themes,
-  Vcl.Styles;
+  Vcl.Styles,
+  ClientAPI.Books in 'ClientAPI.Books.pas';
 
 {$R *.res}
 

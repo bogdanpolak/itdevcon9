@@ -1,0 +1,112 @@
+﻿[
+        {
+		"status": "avaliable",
+		"title": "Delphi Cookbook - Second Edition",
+		"isbn": "9781785287428",
+		"author": "Daniele Teti",
+		"date": "Jun 2016",
+		"pages": 470,
+		"price": 30.13,
+		"currency": "EUR",
+		"description": "Over 60 hands-on recipes to help you master the power of Delphi for cross-platform and mobile development on multiple platforms"
+	},
+	{
+		"status": "avaliable",
+		"title": "Delphi Cookbook - Third Edition",
+		"isbn": "9781788621304",
+		"author": "Daniele Spinetti, Daniele Teti",
+		"date": "Jul 2018",
+		"pages": 668,
+		"price": 30.13,
+		"currency": "EUR",
+		"description": "Quickly learn and employ practical recipes for developing real-world, cross-platform applications using Delphi"
+	},
+	{
+		"status": "cooming-soon",
+		"title": "Delphi GUI Programming with FireMonkey",
+		"isbn": "9781788624176",
+		"author": "Andrea Magni",
+		"date": "Jan 2019",
+		"pages": 437,
+		"price": 29.27,
+		"currency": "EUR",
+		"description": "Master the techniques to build interesting cross platform GUI applications with FMX"
+	},
+	{
+		"status": "avaliable",
+		"title": "Delphi High Performance",
+		"isbn": "9781788625456",
+		"author": "Primož Gabrijelčič",
+		"date": "Feb 2018",
+		"pages": 336,
+		"price": 25.83,
+		"currency": "EUR",
+		"description": "Build fast, scalable, and high performing applications with Delphi"
+	},
+	{
+		"status": "avaliable",
+		"title": "Expert Delphi",
+		"isbn": "9781786460165",
+		"author": "Paweł Głowacki",
+		"date": "Jun 2017",
+		"pages": 506,
+		"price": 32.71,
+		"currency": "EUR",
+		"description": "Become a developer superhero and build stunning cross-platform apps with Delphi"
+	},
+	{
+		"status": "cooming-soon",
+		"title": "Hands-On Design Patterns with Delphi",
+		"isbn": "9781789343243",
+		"author": "Primož Gabrijelčič",
+		"date": "Mar 2019",
+		"pages": 512,
+		"price": 26.69,
+		"currency": "EUR",
+		"description": "Build scalable projects via exploring design patterns in Delphi"
+	},
+	{
+		"status": "avaliable",
+		"title": "Coding in Delphi",
+		"isbn": "9781941266038",
+		"author": "Nick Hodges",
+		"date": "Apr 2014",
+		"pages": 236,
+		"price": 24.99,
+		"currency": "USD",
+		"description": "All about writing Delphi code. It's just about how to use the language in the most effective way to write clean, testable, maintainable Delphi code"
+	},
+	{
+		"status": "avaliable",
+		"title": "More Coding in Delphi",
+		"isbn": "9781941266106",
+		"author": "Nick Hodges",
+		"date": "Dec 2015",
+		"pages": 246,
+		"price": 25.99,
+		"currency": "USD",
+		"description": "Picks up where previous \"Coding in Delphi\" left of, continuing to illustrate good, sound coding techniques including design patterns and principles"
+	},
+	{
+		"status": "avaliable",
+		"title": "Dependency Injection In Delphi",
+		"isbn": "9781941266229",
+		"author": "Nick Hodges",
+		"date": "Feb 2017",
+		"pages": 132,
+		"price": 18.18,
+		"currency": "USD",
+		"description": "Covers Dependency Injection, you'll learn about Constructor Injection, Property Injection, and Method Injection and about the right and wrong way to use it"
+	},
+	{
+		"status": "avaliable",
+		"title": "Delphi in Depth: FireDAC",
+		"isbn": "9781546391272",
+		"author": "Cary Jensen Ph.D",
+		"date": "May 2017",
+		"pages": 556,
+		"price": 52.43,
+		"currency": "EUR",
+		"description": "Learn how to connect to a wide variety of databases, optimize your connection configurations, the power of persisted datasets, create flexible queries using macros and FireDAC scalar functions, achieve blazing performance with Array DML, Master the art of cached updates"
+	}
+]

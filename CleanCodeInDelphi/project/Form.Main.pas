@@ -25,7 +25,7 @@ type
 
   TBookCollection = class(TObjectList<TBook>)
   public
-    procedure LoadDataFromOpenAPI(const UrlBooksAPI: string);
+    procedure LoadDataFromOpenAPI(const token: string);
   end;
 
 type
@@ -70,7 +70,7 @@ implementation
 uses
   System.StrUtils, System.JSON, System.Math,
   Frame.Welcome, Consts.Application, Utils.CipherAES128, Frame.Import,
-  Units.Main, ClientAPI.Contacts, Data.Main;
+  Units.Main, ClientAPI.Contacts, Data.Main, ClientAPI.Books;
 
 const
   SQL_SELECT_DatabaseVersion = 'SELECT versionnr FROM DBInfo';
@@ -78,6 +78,7 @@ const
   // SecurePassword = AES 128 ('masterkey',SecureKey)
   SecurePassword = 'hC52IiCv4zYQY2PKLlSvBaOXc14X41Mc1rcVS6kyr3M=';
   Client_API_Token = '20be805d-9cea27e2-a588efc5-1fceb84d-9fb4b67c';
+  Books_API_Token = 'BOOKS-arg58d8jmefcu5-1fceb';
 
 resourcestring
   SWelcomeScreen = 'Ekran powitalny';
@@ -320,6 +321,9 @@ var
   UserName: string;
   password: string;
   res: Variant;
+  i: Integer;
+  b: TBook;
+  o: Boolean;
 begin
   tmrAppReady.Enabled := False;
   if isDeveloperMode then
@@ -391,12 +395,44 @@ begin
   //
   //
   //
+  AvaliableBooks.LoadDataFromOpenAPI(Books_API_Token);
+  for b in AvaliableBooks do
+    if b.status = 'cooming-soon' then
+      CoomingSoonBooks.Add(AvaliableBooks.Extract(b));
+  for b in AvaliableBooks do
+    lbxBooksAvaliable.AddItem(b.title, b);
+  for b in CoomingSoonBooks do
+    lbxBooksCooming.AddItem(b.title, b);
 end;
 
 { TBookCollection }
 
-procedure TBookCollection.LoadDataFromOpenAPI(const UrlBooksAPI: string);
+procedure TBookCollection.LoadDataFromOpenAPI(const token: string);
+var
+  jsBooks: TJSONArray;
+  i: Integer;
+  jsBook: TJSONObject;
+  b: TBook;
+  fs: TFormatSettings;
+  s: string;
 begin
+  jsBooks := ImportDataFromBooksService(token);
+  for i := 0 to jsBooks.Count-1 do
+  begin
+    jsBook := jsBooks.Items[i] as TJSONObject;
+    b := TBook.Create;
+    b.status := jsBook.Values['status'].Value;
+    b.title := jsBook.Values['title'].Value;
+    b.isbn := jsBook.Values['isbn'].Value;
+    b.author := jsBook.Values['author'].Value;
+    b.date := jsBook.Values['date'].Value;
+    b.pages := (jsBook.Values['pages'] as TJSONNumber).AsInt;
+    b.price := StrToCurr( jsBook.Values['price'].Value);
+    b.currency := jsBook.Values['currency'].Value;
+    b.description := jsBook.Values['description'].Value;
+    self.Add(b);
+  end;
+  jsBooks.Free;
 end;
 
 end.
