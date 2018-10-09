@@ -1,7 +1,5 @@
 # Naming Convention for the BSC Academy.
 
-## Information box
-
 | Data | Value |
 | - | - |
 | version | 1.0 |
