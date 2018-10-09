@@ -5,34 +5,56 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
-  Vcl.StdCtrls, Vcl.ExtCtrls,
+  Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Grids, Vcl.DBGrids, Data.DB,
+
   ChromeTabs, ChromeTabsClasses, ChromeTabsTypes,
-  Mock.MainForm, Data.DB, Vcl.Grids, Vcl.DBGrids;
+  Mock.MainForm, System.Generics.Collections;
+
+type
+  TBook = class
+    status: string;
+    title: string;
+    isbn: string;
+    author: string;
+    date: string;
+    pages: integer;
+    price: currency;
+    currency: string;
+    description: string;
+  end;
+
+  TBookCollection = class(TObjectList<TBook>)
+  public
+    procedure LoadDataFromOpenAPI(const UrlBooksAPI: string);
+  end;
 
 type
   TForm1 = class(TForm)
     GroupBox1: TGroupBox;
-    lbHistoricalMailing: TLabel;
+    lbBooksAvaliable: TLabel;
     Splitter1: TSplitter;
-    lbMailingLists: TLabel;
-    lbxHistoricalMailing: TListBox;
-    lbxMailingLists: TListBox;
+    lbBooksCooming: TLabel;
+    lbxBooksAvaliable: TListBox;
+    lbxBooksCooming: TListBox;
     ChromeTabs1: TChromeTabs;
     pnMain: TPanel;
     btnImport: TButton;
     tmrAppReady: TTimer;
+    procedure FormCreate(Sender: TObject);
     procedure btnImportClick(Sender: TObject);
     procedure ChromeTabs1ButtonCloseTabClick(Sender: TObject; ATab: TChromeTab;
       var Close: Boolean);
     procedure ChromeTabs1Change(Sender: TObject; ATab: TChromeTab;
       TabChangeType: TTabChangeType);
-    procedure FormCreate(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormResize(Sender: TObject);
     procedure Splitter1Moved(Sender: TObject);
     procedure tmrAppReadyTimer(Sender: TObject);
   private
     isDeveloperMode: Boolean;
     isDatabaseOK: Boolean;
+    AvaliableBooks: TBookCollection;
+    CoomingSoonBooks: TBookCollection;
     procedure ResizeGroupBox();
   public
     FDConnection1: TFDConnectionMock;
@@ -68,24 +90,6 @@ resourcestring
   SDBErrorSelect = 'Nie mo¿na wykonaæ polecenia SELECT w bazie danych.';
   StrNotSupportedDBVersion = 'B³êdna wersja bazy danych. Proszê' +
     ' zaktualizowaæ strukturê bazy.';
-
-procedure TForm1.FormCreate(Sender: TObject);
-var
-  Extention: string;
-  ExeName: string;
-  ProjectFileName: string;
-begin
-{$IFDEF DEBUG}
-  Extention := '.dpr';
-  ExeName := ExtractFileName(Application.ExeName);
-  ProjectFileName := ChangeFileExt(ExeName, Extention);
-  isDeveloperMode := FileExists(ProjectFileName) or
-    FileExists('..\..\' + ProjectFileName);
-{$ELSE}
-  isDeveloperMode := False;
-{$ENDIF}
-  pnMain.Caption := '';
-end;
 
 function DBVersionToString(VerDB: integer): string;
 begin
@@ -139,7 +143,7 @@ begin
   for i := 0 to DBGrid.Columns.Count - 1 do
     if DBGrid.Columns[i].Visible then
       ColumnsWidth[i] := DBGrid.Canvas.TextWidth
-        (DBGrid.Columns[i].Title.Caption + '   ')
+        (DBGrid.Columns[i].title.Caption + '   ')
     else
       ColumnsWidth[i] := 0;
   if DBGrid.DataSource <> nil then
@@ -246,6 +250,32 @@ begin
   end;
 end;
 
+procedure TForm1.FormCreate(Sender: TObject);
+var
+  Extention: string;
+  ExeName: string;
+  ProjectFileName: string;
+begin
+{$IFDEF DEBUG}
+  Extention := '.dpr';
+  ExeName := ExtractFileName(Application.ExeName);
+  ProjectFileName := ChangeFileExt(ExeName, Extention);
+  isDeveloperMode := FileExists(ProjectFileName) or
+    FileExists('..\..\' + ProjectFileName);
+{$ELSE}
+  isDeveloperMode := False;
+{$ENDIF}
+  pnMain.Caption := '';
+  AvaliableBooks := TBookCollection.Create();
+  CoomingSoonBooks := TBookCollection.Create();
+end;
+
+procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  AvaliableBooks.Free;
+  CoomingSoonBooks.Free;
+end;
+
 procedure TForm1.ResizeGroupBox();
 var
   sum: integer;
@@ -253,9 +283,9 @@ var
   labelPixelHeight: integer;
 begin
   (*
-    sum := lbxFilesToAdd.Height + lbxFilesToRemove.Height;
-    lbxFilesToAdd.Height := sum div 2;
-    lbxFilesToRemove.Height := sum div 2;
+    sum := lbxBooksAvaliable.Height + lbxBooksCooming.Height;
+    lbxBooksAvaliable.Height := sum div 2;
+    lbxBooksCooming.Height := sum div 2;
   *)
   with TBitmap.Create do
   begin
@@ -263,18 +293,17 @@ begin
     labelPixelHeight := Canvas.TextHeight('Zg');
     Free;
   end;
-  sum := SumHeightForChildrens(GroupBox1, [lbxHistoricalMailing,
-    lbxMailingLists]);
+  sum := SumHeightForChildrens(GroupBox1, [lbxBooksAvaliable, lbxBooksCooming]);
   avaliable := GroupBox1.Height - sum - labelPixelHeight;
   if GroupBox1.AlignWithMargins then
     avaliable := avaliable - GroupBox1.Padding.Top - GroupBox1.Padding.Bottom;
-  if lbxHistoricalMailing.AlignWithMargins then
-    avaliable := avaliable - lbxHistoricalMailing.Margins.Top -
-      lbxHistoricalMailing.Margins.Bottom;
-  if lbxMailingLists.AlignWithMargins then
-    avaliable := avaliable - lbxMailingLists.Margins.Top -
-      lbxMailingLists.Margins.Bottom;
-  lbxHistoricalMailing.Height := avaliable div 2;
+  if lbxBooksAvaliable.AlignWithMargins then
+    avaliable := avaliable - lbxBooksAvaliable.Margins.Top -
+      lbxBooksAvaliable.Margins.Bottom;
+  if lbxBooksCooming.AlignWithMargins then
+    avaliable := avaliable - lbxBooksCooming.Margins.Top -
+      lbxBooksCooming.Margins.Bottom;
+  lbxBooksAvaliable.Height := avaliable div 2;
 end;
 
 procedure TForm1.Splitter1Moved(Sender: TObject);
@@ -362,6 +391,12 @@ begin
   //
   //
   //
+end;
+
+{ TBookCollection }
+
+procedure TBookCollection.LoadDataFromOpenAPI(const UrlBooksAPI: string);
+begin
 end;
 
 end.

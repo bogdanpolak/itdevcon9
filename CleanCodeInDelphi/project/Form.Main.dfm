@@ -11,6 +11,7 @@ object Form1: TForm1
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
   PixelsPerInch = 96
@@ -374,7 +375,7 @@ object Form1: TForm1
     Padding.Right = 2
     ParentFont = False
     TabOrder = 1
-    object lbHistoricalMailing: TLabel
+    object lbBooksAvaliable: TLabel
       AlignWithMargins = True
       Left = 7
       Top = 52
@@ -383,8 +384,8 @@ object Form1: TForm1
       Margins.Top = 6
       Margins.Bottom = 0
       Align = alTop
-      Caption = 'Historical Mailing:'
-      ExplicitWidth = 82
+      Caption = 'Avaliable Books:'
+      ExplicitWidth = 78
     end
     object Splitter1: TSplitter
       Left = 4
@@ -397,7 +398,7 @@ object Form1: TForm1
       ExplicitTop = 125
       ExplicitWidth = 190
     end
-    object lbMailingLists: TLabel
+    object lbBooksCooming: TLabel
       AlignWithMargins = True
       Left = 7
       Top = 211
@@ -406,10 +407,10 @@ object Form1: TForm1
       Margins.Top = 0
       Margins.Bottom = 0
       Align = alTop
-      Caption = 'Mailing Lists'
-      ExplicitWidth = 56
+      Caption = 'Cooming Soon:'
+      ExplicitWidth = 72
     end
-    object lbxHistoricalMailing: TListBox
+    object lbxBooksAvaliable: TListBox
       AlignWithMargins = True
       Left = 7
       Top = 68
@@ -420,7 +421,7 @@ object Form1: TForm1
       ItemHeight = 13
       TabOrder = 0
     end
-    object lbxMailingLists: TListBox
+    object lbxBooksCooming: TListBox
       AlignWithMargins = True
       Left = 7
       Top = 227
@@ -429,8 +430,7 @@ object Form1: TForm1
       Align = alClient
       ItemHeight = 13
       TabOrder = 1
-      ExplicitTop = 207
-      ExplicitHeight = 188
+      ExplicitLeft = 5
     end
     object btnImport: TButton
       AlignWithMargins = True
