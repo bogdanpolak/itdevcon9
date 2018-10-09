@@ -1,4 +1,4 @@
-# Naming convention for the BSC Academy.
+# Naming Convention for the BSC Academy.
 
 ## Information box
 
@@ -79,6 +79,5 @@ Proposals of base segments for the project:
 
 ## TODO
 
-[ ] Bibliography links with sources
-
-[ ] Build namespace structure
+- [ ] Bibliography links with sources
+- [ ] Build namespace structure
