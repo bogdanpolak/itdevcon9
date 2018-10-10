@@ -14,7 +14,11 @@ uses
   Utils.Messages in 'Utils.Messages.pas',
   Vcl.Themes,
   Vcl.Styles,
-  ClientAPI.Books in 'ClientAPI.Books.pas';
+  ClientAPI.Books in 'ClientAPI.Books.pas',
+  DataAccess.Base in 'experimental\DataAccess.Base.pas',
+  Scripts.Readers in 'experimental\Scripts.Readers.pas',
+  DataAccess.Readers in 'experimental\DataAccess.Readers.pas',
+  DataAccess.Readers.FireDAC in 'experimental\DataAccess.Readers.FireDAC.pas';
 
 {$R *.res}
 
