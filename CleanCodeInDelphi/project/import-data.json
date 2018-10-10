@@ -1,63 +1,37 @@
 ﻿[
 	{
-		"email": "anna.kowalska@poczta.onet.pl",
-		"firstname": "Anna",
-		"lastname": "Kowalska",
+		"firstname": "Josh",
+		"lastname": "Kaminski",
+		"email": "josh.kaminski@gmail.com",
+		"company": "",
+                "book-isbn": "9781788621304",
+                "book-title": "Delphi Cookbook - Third Edition",
+                "rating": 10,
+                "oppinion": "Great! There are lots of an easy to implement recepies. Very useful for the future. I recommend it to an every Delphi developer."
+	},
+	{
+		"firstname": "Gervasio",
+		"lastname": "Brancato",
+		"email": "rervasio3419@email.it",
 		"company": ""
 	},
 	{
-		"email": "ppawlowicz@jakafirma.pl",
-		"firstname": "Piotr",
-		"lastname": "Pałwowicz",
-		"company": "Jaka Firma S.A."
-	},
-	{
-		"email": "jan.kowalski@gmail.pl",
-		"firstname": "Jan",
-		"lastname": "Kowalski",
+		"firstname": "Rolando",
+		"lastname": "D'Ottavio",
+		"email": "r.ottavio@alice.it",
 		"company": "Motife Sp. z o.o."
 	},
 	{
-		"email": "kasia.koterska@ingbank.pl",
-		"firstname": "Kaaaatarzyna",
-		"lastname": "Koterska",
-		"company": "ING Bank Śląski S.A."
+		"firstname": "Adolfo",
+		"lastname": "Alba",
+		"email": "aa9876543@gmail.com",
+		"company": ""
 	},
 	{
-		"email": "dfrankowska@buirorozwoju.eu",
-		"firstname": "Dorota",
-		"lastname": "Fraaa",
-		"company": "Europejskie Biuro R"
-	},
-	{
-		"email": "jarzabek@poczta.onet.pl",
-		"firstname": "Konstanty",
-		"lastname": "Jarzębkowski",
-		"company": "SuperComp Sp. z o.o."
-	},
-	{
-		"email": "marysia@nowafirma.olsztyn.pl",
-		"firstname": "Magdalena",
-		"lastname": "Magdecka",
-		"company": "Nowa Firma Olsztyn"
-	},
-	{
-		"email": "beata.borkowska@wp.pl"
-	},
-	{
-		"email": "ajankowska@pekao.com.pl",
-		"firstname": "Agniszka",
-		"lastname": "Jankowska",
-		"company": "Bank Pekao SA Warszawa"
-	},
-	{
-		"email": "dominik.domagala@imgw.org.pl"
-	},
-	{
-		"email": "zuzanna.zarebska@gmail.com"
-	},
-	{
-		"email": "janusz2874@poczta.onet.pl"
+		"firstname": "Pancrazio",
+		"lastname": "Muto",
+		"email": "SuperPancrazio70@email.it",
+		"company": "Jaka Firma S.A."
 	},
 	{
 		"email": "staszek.sobieraj@empik.com",
