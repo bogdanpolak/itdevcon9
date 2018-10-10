@@ -1,4 +1,4 @@
-# Clean Code in Delphi
+﻿# Clean Code in Delphi
 
 **Summary**
 
@@ -45,6 +45,30 @@ Clean code:
     * Good code reviews shouldn't be offensive and rules should be useful.
     * If someone disagree don't push them, but try to understand and then adjust the rules to it.
 
+### Level of Code Maturity
+
+1. Messy code
+    * Code as you like, no rules
+    * Just working code (ussually)
+
+2. Bitten code
+    * Zero warnings policy
+    * Cleaning unnecessary unit in uses secions
+    * Try to move units into implementation area
+
+3. Clean code
+    * Formated code
+    * Random code reviews
+    * Cyclic refactoring tasks
+    * Naming convention
+    * Build up company clean code rules
+
+4. Solid code
+    * Reusable code
+    * Managed by architect
+    * Set of the good practices
+    * Team patterns and principles
+    * Testable code
 
 ### Code Bed smells
 
