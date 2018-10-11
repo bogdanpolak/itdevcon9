@@ -2,7 +2,7 @@ object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'Form1'
-  ClientHeight = 405
+  ClientHeight = 431
   ClientWidth = 655
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -16,21 +16,33 @@ object Form1: TForm1
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
+  object Splitter2: TSplitter
+    Left = 238
+    Top = 0
+    Width = 5
+    Height = 431
+    ExplicitLeft = 193
+    ExplicitHeight = 405
+  end
   object pnMain: TPanel
     AlignWithMargins = True
-    Left = 196
+    Left = 243
     Top = 3
-    Width = 456
-    Height = 399
+    Width = 409
+    Height = 425
+    Margins.Left = 0
     Align = alClient
     BevelOuter = bvNone
     Caption = 'pnMain'
     TabOrder = 0
+    ExplicitLeft = 196
+    ExplicitWidth = 456
+    ExplicitHeight = 399
     object ChromeTabs1: TChromeTabs
       AlignWithMargins = True
       Left = 3
       Top = 3
-      Width = 450
+      Width = 403
       Height = 30
       OnChange = ChromeTabs1Change
       OnButtonCloseTabClick = ChromeTabs1ButtonCloseTabClick
@@ -354,14 +366,15 @@ object Form1: TForm1
       LookAndFeel.ScrollButtons.Arrow.Disabled.OutlineAlpha = 200
       Align = alTop
       TabOrder = 0
+      ExplicitWidth = 450
     end
   end
   object GroupBox1: TGroupBox
     AlignWithMargins = True
     Left = 3
     Top = 2
-    Width = 190
-    Height = 400
+    Width = 235
+    Height = 426
     Margins.Top = 2
     Margins.Right = 0
     Align = alLeft
@@ -379,7 +392,7 @@ object Form1: TForm1
       AlignWithMargins = True
       Left = 7
       Top = 52
-      Width = 176
+      Width = 221
       Height = 13
       Margins.Top = 6
       Margins.Bottom = 0
@@ -389,8 +402,8 @@ object Form1: TForm1
     end
     object Splitter1: TSplitter
       Left = 4
-      Top = 204
-      Width = 182
+      Top = 211
+      Width = 227
       Height = 7
       Cursor = crVSplit
       Align = alTop
@@ -401,36 +414,39 @@ object Form1: TForm1
     object lbBooksAvaliable: TLabel
       AlignWithMargins = True
       Left = 7
-      Top = 211
-      Width = 176
+      Top = 218
+      Width = 221
       Height = 13
       Margins.Top = 0
       Margins.Bottom = 0
       Align = alTop
       Caption = 'Avaliable Books:'
+      ExplicitTop = 211
       ExplicitWidth = 78
     end
     object lbxBooksReaded: TListBox
       AlignWithMargins = True
       Left = 7
       Top = 68
-      Width = 176
-      Height = 136
+      Width = 221
+      Height = 143
       Margins.Bottom = 0
+      Style = lbOwnerDrawFixed
       Align = alTop
       DragMode = dmAutomatic
-      ItemHeight = 13
+      ItemHeight = 50
       TabOrder = 0
       OnDragDrop = lbxBooksDragDrop
       OnDragOver = lbxBooksDragOver
+      OnDrawItem = lbxBooksReadedDrawItem
       OnStartDrag = lbxBooksStartDrag
     end
     object lbxBooksAvaliable2: TListBox
       AlignWithMargins = True
       Left = 7
-      Top = 227
-      Width = 176
-      Height = 168
+      Top = 234
+      Width = 221
+      Height = 187
       Align = alClient
       DragMode = dmAutomatic
       ItemHeight = 13
@@ -438,17 +454,21 @@ object Form1: TForm1
       OnDragDrop = lbxBooksDragDrop
       OnDragOver = lbxBooksDragOver
       OnStartDrag = lbxBooksStartDrag
+      ExplicitTop = 227
+      ExplicitWidth = 176
+      ExplicitHeight = 168
     end
     object btnImport: TButton
       AlignWithMargins = True
       Left = 7
       Top = 18
-      Width = 176
+      Width = 221
       Height = 25
       Align = alTop
       Caption = 'btnImport'
       TabOrder = 2
       OnClick = btnImportClick
+      ExplicitWidth = 176
     end
   end
   object tmrAppReady: TTimer

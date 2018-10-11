@@ -40,6 +40,7 @@ type
     pnMain: TPanel;
     btnImport: TButton;
     tmrAppReady: TTimer;
+    Splitter2: TSplitter;
     procedure FormCreate(Sender: TObject);
     procedure btnImportClick(Sender: TObject);
     procedure ChromeTabs1ButtonCloseTabClick(Sender: TObject; ATab: TChromeTab;
@@ -53,6 +54,8 @@ type
     procedure lbxBooksDragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure lbxBooksDragOver(Sender, Source: TObject; X, Y: Integer;
         State: TDragState; var Accept: Boolean);
+    procedure lbxBooksReadedDrawItem(Control: TWinControl; Index: Integer; Rect:
+        TRect; State: TOwnerDrawState);
     procedure Splitter1Moved(Sender: TObject);
     procedure tmrAppReadyTimer(Sender: TObject);
   private
@@ -323,6 +326,69 @@ begin
   Accept := (Source is TListBox) and (DragedIdx>=0) and (Sender <> Source);
 end;
 
+procedure TForm1.lbxBooksReadedDrawItem(Control: TWinControl; Index: Integer;
+    Rect: TRect; State: TOwnerDrawState);
+var
+  s: string;
+  ACanvas: TCanvas;
+  b: TBook;
+  r2: TRect;
+  lbx: TListBox;
+  colorTextTitle: Integer;
+  colorTextAuthor: Integer;
+  colorBackground: Integer;
+  colorGutter: Integer;
+begin
+  // TOwnerDrawState = set of (odSelected, odGrayed, odDisabled, odChecked,
+  // odFocused, odDefault, odHotLight, odInactive, odNoAccel, odNoFocusRect,
+  // odReserved1, odReserved2, odComboBoxEdit);
+  lbx := lbxBooksReaded;
+
+  // if (odSelected in State) and (odFocused in State) then
+  if (odSelected in State) then
+  begin
+    colorGutter := $f0ffd0;
+    colorTextTitle := clHighlightText;
+    colorTextAuthor := $ffffc0;
+    colorBackground := clHighlight;
+  end
+  else
+  begin
+    colorGutter := $a0ff20;
+    colorTextTitle := lbx.Font.Color;
+    colorTextAuthor := $909000;
+    colorBackground := lbx.Color;
+  end;
+  b := lbx.Items.Objects[Index] as TBook;
+  s := b.title;
+  ACanvas := lbx.Canvas;
+  ACanvas.Brush.Color := colorBackground;
+  r2 := Rect;  r2.Left := 0;
+  ACanvas.FillRect(r2);
+  ACanvas.Brush.Color := colorGutter;
+  r2 := Rect; r2.Left := 0;
+  InflateRect(r2,-3,-5);
+  r2.Right := r2.Left+6;
+  ACanvas.FillRect(r2);
+  ACanvas.Brush.Color := colorBackground;
+  Rect.Left := Rect.Left + 13;
+  ACanvas.Font.Color := colorTextAuthor;
+  ACanvas.Font.Size := lbx.Font.Size;
+  ACanvas.TextOut(13,Rect.Top+2,b.author);
+  r2 := Rect;
+  r2.Left := 13;
+  r2.Top := r2.Top + Canvas.TextHeight('Ag');
+  ACanvas.Font.Color := colorTextTitle;
+  ACanvas.Font.Size := lbx.Font.Size+2;
+  InflateRect(r2,-2,-1);
+  DrawText(ACanvas.Handle,
+    PChar(s),
+    Length(s),
+    r2,
+    // DT_LEFT or DT_WORDBREAK or DT_CALCRECT);
+    DT_LEFT or DT_WORDBREAK);
+end;
+
 procedure TForm1.ResizeGroupBox();
 var
   sum: integer;
@@ -370,6 +436,8 @@ var
   i: Integer;
   b: TBook;
   o: Boolean;
+  AllBooks: TBookCollection;
+  OtherBooks: TBookCollection;
 begin
   tmrAppReady.Enabled := False;
   if isDeveloperMode then
@@ -441,10 +509,20 @@ begin
   //
   //
   //
-  ReadedBooks.LoadDataFromOpenAPI(Books_API_Token);
-  for b in ReadedBooks do
-    if b.status = 'cooming-soon' then
-      AvaliableXBooks.Add(ReadedBooks.Extract(b));
+  AllBooks := TBookCollection.Create(false);
+  OtherBooks := TBookCollection.Create();
+  AllBooks.LoadDataFromOpenAPI(Books_API_Token);
+  for b in AllBooks do
+  begin
+    if b.status = 'on-shelf' then
+      ReadedBooks.Add(b)
+    else if b.status = 'avaliable' then
+      AvaliableXBooks.Add(b)
+    else
+      OtherBooks.Add(b);
+  end;
+  AllBooks.Free;
+  OtherBooks.Free;
   for b in ReadedBooks do
     lbxBooksReaded.AddItem(b.title, b);
   for b in AvaliableXBooks do

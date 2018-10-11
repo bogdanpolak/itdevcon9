@@ -1,6 +1,6 @@
 ﻿[
 	{
-		"status": "avaliable",
+		"status": "on-shelf",
 		"title": "Hands-On Design Patterns with C# and .NET Core",
 		"isbn": "978-1788625258",
 		"author": "Gaurav Aroraa, Jeffrey Chilberto",
@@ -44,7 +44,7 @@
 		"description": "Author synthesizes the most effective techniques and must-know principles into clear, pragmatic book which will inform and stimulate your thinking and help you build the highest quality software"
 	},
 	{
-		"status": "avaliable",
+		"status": "on-shelf",
 		"title": "Clean Code: A Handbook of Agile Software Craftsmanship",
 		"isbn": "978-0132350884",
 		"author": "Robert C. Martin",
@@ -55,7 +55,7 @@
 		"description": "Best agile practices of cleaning code “on the fly” that will instill within you the values of a software craftsman and make you a better programmer—but only if you work at it."
 	},
 	{
-		"status": "avaliable",
+		"status": "on-shelf",
 		"title": "Refactoring: Improving the Design of Existing Code",
 		"isbn": "978-0201485677",
 		"author": "Martin Fowler, Kent Beck, John Brant, William Opdyke, Don Roberts",
@@ -66,7 +66,7 @@
 		"description": "Book shows how refactoring can make object-oriented code simpler and easier to maintain. Provides a catalog of tips for improving code."
 	},
 	{
-		"status": "avaliable",
+		"status": "on-shelf",
 		"title": "Design Patterns: Elements of Reusable Object-Oriented Software",
 		"isbn": "978-0201633610",
 		"author": "Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides",
@@ -77,7 +77,7 @@
 		"description": "Modern classic in the literature of object-oriented development. Offering timeless and elegant solutions to common problems in software design. It describes 23 patterns for object creation, composing them, and coordinating control flow between them."
 	},
 	{
-		"status": "avaliable",
+		"status": "on-shelf",
 		"title": "Working Effectively with Legacy Code",
 		"isbn": "978-0131177055",
 		"author": "Michael Feathers",
@@ -143,7 +143,7 @@
 		"description": "Become a developer superhero and build stunning cross-platform apps with Delphi"
 	},
 	{
-		"status": "avaliable",
+		"status": "on-shelf",
 		"title": "Coding in Delphi",
 		"isbn": "978-1941266038",
 		"author": "Nick Hodges",
@@ -154,7 +154,7 @@
 		"description": "All about writing Delphi code. It's just about how to use the language in the most effective way to write clean, testable, maintainable Delphi code"
 	},
 	{
-		"status": "avaliable",
+		"status": "on-shelf",
 		"title": "More Coding in Delphi",
 		"isbn": "978-1941266106",
 		"author": "Nick Hodges",
