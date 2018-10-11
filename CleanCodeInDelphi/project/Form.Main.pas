@@ -223,8 +223,9 @@ begin
     DBGrid.Align := alClient;
     DBGrid.DataSource := datasrc;
     // --------
-    DataModMain.LoadContactsFromJSON(jsData);
-    datasrc.DataSet := DataModMain.mtabContacts;
+    DataModMain.ImportNewReadersFromJSON(jsData);
+    DataModMain.OpenDataSets;
+    datasrc.DataSet := DataModMain.mtabReaders;
     AutoSizeColumns(DBGrid);
   finally
     jsData.Free;

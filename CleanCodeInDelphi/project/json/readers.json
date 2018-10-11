@@ -13,30 +13,24 @@
 		"firstname": "Gervasio",
 		"lastname": "Brancato",
 		"email": "rervasio3419@email.it",
-		"company": ""
+		"company": "Komerci"
 	},
 	{
 		"firstname": "Rolando",
 		"lastname": "D'Ottavio",
 		"email": "r.ottavio@alice.it",
-		"company": "Motife Sp. z o.o."
+		"company": "Motife Srl"
 	},
 	{
+		"id": 104,
 		"firstname": "Adolfo",
 		"lastname": "Alba",
 		"email": "aa9876543@gmail.com",
-		"company": ""
 	},
 	{
+		"id": 105,
 		"firstname": "Pancrazio",
 		"lastname": "Muto",
 		"email": "SuperPancrazio70@email.it",
-		"company": "Jaka Firma S.A."
-	},
-	{
-		"email": "staszek.sobieraj@empik.com",
-		"firstname": "Stanisław",
-		"lastname": "Sobieraj",
-		"company": "Empik sp. z o.o."
 	}
 ]

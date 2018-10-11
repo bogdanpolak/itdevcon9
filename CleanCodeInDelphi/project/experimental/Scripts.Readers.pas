@@ -24,7 +24,7 @@ var
   Readers: IReadersDAO;
   s: string;
 begin
-  Readers := GetReader_FireDAC(DataModMain.mtabContacts);
+  Readers := GetReader_FireDAC(DataModMain.mtabReaders);
   s := '';
   Readers.ForEach(
     procedure(row: IReadersDAO)

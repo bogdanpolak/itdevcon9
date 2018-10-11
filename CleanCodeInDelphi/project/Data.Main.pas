@@ -6,25 +6,43 @@ uses
   System.SysUtils, System.Classes, System.JSON,
   FireDAC.Stan.Intf, FireDAC.Stan.Option,
   FireDAC.Stan.Param, FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf,
-  FireDAC.DApt.Intf, Data.DB, FireDAC.Comp.DataSet, FireDAC.Comp.Client;
+  FireDAC.DApt.Intf, Data.DB, FireDAC.Comp.DataSet, FireDAC.Comp.Client,
+  FireDAC.Stan.StorageJSON;
 
 type
   TDataModMain = class(TDataModule)
-    mtabContacts: TFDMemTable;
-    mtabContactsImport: TBooleanField;
-    mtabContactsEmail: TWideStringField;
-    mtabContactsFirstName: TWideStringField;
-    mtabContactsLastName: TWideStringField;
-    mtabContactsCompany: TWideStringField;
-    mtabContactsDuplicated: TBooleanField;
-    mtabContactsConflicts: TBooleanField;
-    mtabContactsCurFirstName: TWideStringField;
-    mtabContactsCurLastName: TWideStringField;
-    mtabContactsCurCompany: TWideStringField;
+    // ------------------------------------------------------
+    // Readers Table:
+    mtabReaders: TFDMemTable;
+    mtabReadersReaderId: TIntegerField;
+    mtabReadersEmail: TWideStringField;
+    mtabReadersFirstName: TWideStringField;
+    mtabReadersLastName: TWideStringField;
+    mtabReadersCompany: TWideStringField;
+    mtabReadersBooksRead: TIntegerField;
+    mtabReadersLastReport: TDateField;
+    // ------------------------------------------------------
+    // Reports Table:
+    mtabReports: TFDMemTable;
+    // ------------------------------------------------------
+    // Books Table:
+    mtabBooks: TFDMemTable;
+    mtabBooksISBN: TWideStringField;
+    mtabBooksTitle: TWideStringField;
+    mtabBooksAuthors: TWideStringField;
+    mtabBooksStatus: TWideStringField;
+    mtabBooksReleseDate: TDateField;
+    mtabBooksPages: TIntegerField;
+    mtabBooksPrice: TCurrencyField;
+    mtabBooksCurrency: TWideStringField;
+    mtabBooksDescription: TWideStringField;
+    FDStanStorageJSONLink1: TFDStanStorageJSONLink;
+    // ------------------------------------------------------
   private
     { Private declarations }
   public
-    procedure LoadContactsFromJSON (jsData: TJSONArray);
+    procedure ImportNewReadersFromJSON(jsData: TJSONArray);
+    procedure OpenDataSets;
   end;
 
 var
@@ -33,38 +51,45 @@ var
 implementation
 
 {%CLASSGROUP 'Vcl.Controls.TControl'}
-
 {$R *.dfm}
-
 { TDataModMain }
 
-procedure TDataModMain.LoadContactsFromJSON(jsData: TJSONArray);
+procedure TDataModMain.ImportNewReadersFromJSON(jsData: TJSONArray);
 var
   i: Integer;
   row: TJSONObject;
   email: string;
+  firstName: string;
+  lastName: string;
+  company: string;
 begin
-  mtabContacts.Open;
-  mtabContacts.EmptyDataSet;
-  mtabContactsImport.DisplayValues := ';';
   for i := 0 to jsData.Count - 1 do
   begin
-    mtabContacts.Append;
-    mtabContactsImport.Value := True;
     row := jsData.Items[i] as TJSONObject;
     email := row.Values['email'].Value;
-    mtabContactsEmail.Value := email;
-    if Assigned(row.Values['firstname']) then
-      mtabContactsFirstName.Value := row.Values['firstname'].Value;
-    if Assigned(row.Values['lastname']) then
-      mtabContactsLastName.Value := row.Values['lastname'].Value;
-    if Assigned(row.Values['company']) then
-      mtabContactsCompany.Value := row.Values['company'].Value;
-    mtabContactsDuplicated.Value := False;
-    mtabContactsImport.Value := not mtabContactsDuplicated.Value;
-    mtabContactsConflicts.Value := False;
-    mtabContacts.Post;
+    if Assigned(row.Values['firstname']) and not row.Values['firstname'].Null
+    then
+      firstName := row.Values['firstname'].Value;
+    if Assigned(row.Values['lastname']) and not row.Values['lastname'].Null then
+      lastName := row.Values['lastname'].Value;
+    if Assigned(row.Values['company']) and not row.Values['company'].Null then
+      company := row.Values['company'].Value;
   end;
+end;
+
+procedure TDataModMain.OpenDataSets;
+var
+  JSONFileName: string;
+  fname: string;
+begin
+  JSONFileName := 'json\dbtable-readers.json';
+  if FileExists(JSONFileName) then
+    fname := JSONFileName
+  else if FileExists('..\..\' + JSONFileName) then
+    fname := '..\..\' + JSONFileName
+  else
+    raise Exception.Create('Error Message');
+  mtabReaders.LoadFromFile(fname);
 end;
 
 end.
