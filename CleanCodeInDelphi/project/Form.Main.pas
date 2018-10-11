@@ -31,11 +31,11 @@ type
 type
   TForm1 = class(TForm)
     GroupBox1: TGroupBox;
-    lbBooksAvaliable: TLabel;
+    lbBooksReaded: TLabel;
     Splitter1: TSplitter;
-    lbBooksCooming: TLabel;
-    lbxBooksAvaliable: TListBox;
-    lbxBooksCooming: TListBox;
+    lbBooksAvaliable: TLabel;
+    lbxBooksReaded: TListBox;
+    lbxBooksAvaliable2: TListBox;
     ChromeTabs1: TChromeTabs;
     pnMain: TPanel;
     btnImport: TButton;
@@ -58,8 +58,8 @@ type
   private
     isDeveloperMode: Boolean;
     isDatabaseOK: Boolean;
-    AvaliableBooks: TBookCollection;
-    CoomingSoonBooks: TBookCollection;
+    ReadedBooks: TBookCollection;
+    AvaliableXBooks: TBookCollection;
     DragedIdx: Integer;
     procedure ResizeGroupBox();
   public
@@ -76,7 +76,7 @@ implementation
 uses
   System.StrUtils, System.JSON, System.Math,
   Frame.Welcome, Consts.Application, Utils.CipherAES128, Frame.Import,
-  Units.Main, ClientAPI.Contacts, Data.Main, ClientAPI.Books;
+  Units.Main, Data.Main, ClientAPI.Readers, ClientAPI.Books;
 
 const
   SQL_SELECT_DatabaseVersion = 'SELECT versionnr FROM DBInfo';
@@ -214,7 +214,7 @@ begin
   //
   // Import data from OpenAPI
   //
-  jsData := ImportDataFromClientService(Client_API_Token);
+  jsData := ImportReadersFromWebService(Client_API_Token);
   try
     datasrc := TDataSource.Create(frm);
     DBGrid := TDBGrid.Create(frm);
@@ -229,7 +229,6 @@ begin
   finally
     jsData.Free;
   end;
-
 end;
 
 procedure TForm1.ChromeTabs1ButtonCloseTabClick(Sender: TObject;
@@ -273,14 +272,14 @@ begin
   isDeveloperMode := False;
 {$ENDIF}
   pnMain.Caption := '';
-  AvaliableBooks := TBookCollection.Create();
-  CoomingSoonBooks := TBookCollection.Create();
+  ReadedBooks := TBookCollection.Create();
+  AvaliableXBooks := TBookCollection.Create();
 end;
 
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  AvaliableBooks.Free;
-  CoomingSoonBooks.Free;
+  ReadedBooks.Free;
+  AvaliableXBooks.Free;
 end;
 
 procedure TForm1.lbxBooksStartDrag(Sender: TObject; var DragObject:
@@ -304,13 +303,13 @@ begin
   lbx1 := Source as TListBox;
   lbx2 := Sender as TListBox;
   b := lbx1.Items.Objects[DragedIdx] as TBook;
-  if lbx1=lbxBooksAvaliable then begin
-    srcList := AvaliableBooks;
-    dstList := CoomingSoonBooks;
+  if lbx1=lbxBooksReaded then begin
+    srcList := ReadedBooks;
+    dstList := AvaliableXBooks;
   end
   else begin
-    srcList := CoomingSoonBooks;
-    dstList := AvaliableBooks;
+    srcList := AvaliableXBooks;
+    dstList := ReadedBooks;
   end;
   dstList.Add(srcList.Extract(b));
   lbx1.Items.Delete(DragedIdx);
@@ -340,17 +339,17 @@ begin
     labelPixelHeight := Canvas.TextHeight('Zg');
     Free;
   end;
-  sum := SumHeightForChildrens(GroupBox1, [lbxBooksAvaliable, lbxBooksCooming]);
+  sum := SumHeightForChildrens(GroupBox1, [lbxBooksReaded, lbxBooksAvaliable2]);
   avaliable := GroupBox1.Height - sum - labelPixelHeight;
   if GroupBox1.AlignWithMargins then
     avaliable := avaliable - GroupBox1.Padding.Top - GroupBox1.Padding.Bottom;
-  if lbxBooksAvaliable.AlignWithMargins then
-    avaliable := avaliable - lbxBooksAvaliable.Margins.Top -
-      lbxBooksAvaliable.Margins.Bottom;
-  if lbxBooksCooming.AlignWithMargins then
-    avaliable := avaliable - lbxBooksCooming.Margins.Top -
-      lbxBooksCooming.Margins.Bottom;
-  lbxBooksAvaliable.Height := avaliable div 2;
+  if lbxBooksReaded.AlignWithMargins then
+    avaliable := avaliable - lbxBooksReaded.Margins.Top -
+      lbxBooksReaded.Margins.Bottom;
+  if lbxBooksAvaliable2.AlignWithMargins then
+    avaliable := avaliable - lbxBooksAvaliable2.Margins.Top -
+      lbxBooksAvaliable2.Margins.Bottom;
+  lbxBooksReaded.Height := avaliable div 2;
 end;
 
 procedure TForm1.Splitter1Moved(Sender: TObject);
@@ -441,14 +440,14 @@ begin
   //
   //
   //
-  AvaliableBooks.LoadDataFromOpenAPI(Books_API_Token);
-  for b in AvaliableBooks do
+  ReadedBooks.LoadDataFromOpenAPI(Books_API_Token);
+  for b in ReadedBooks do
     if b.status = 'cooming-soon' then
-      CoomingSoonBooks.Add(AvaliableBooks.Extract(b));
-  for b in AvaliableBooks do
-    lbxBooksAvaliable.AddItem(b.title, b);
-  for b in CoomingSoonBooks do
-    lbxBooksCooming.AddItem(b.title, b);
+      AvaliableXBooks.Add(ReadedBooks.Extract(b));
+  for b in ReadedBooks do
+    lbxBooksReaded.AddItem(b.title, b);
+  for b in AvaliableXBooks do
+    lbxBooksAvaliable2.AddItem(b.title, b);
 end;
 
 { TBookCollection }
@@ -462,7 +461,7 @@ var
   fs: TFormatSettings;
   s: string;
 begin
-  jsBooks := ImportDataFromBooksService(token);
+  jsBooks := ImportBooksFromWebService(token);
   for i := 0 to jsBooks.Count-1 do
   begin
     jsBook := jsBooks.Items[i] as TJSONObject;

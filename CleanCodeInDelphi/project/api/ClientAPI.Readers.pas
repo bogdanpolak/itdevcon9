@@ -1,24 +1,24 @@
-unit ClientAPI.Books;
+unit ClientAPI.Readers;
 
 interface
 
 uses
   System.JSON;
 
-function ImportDataFromBooksService (const token:string): TJSONArray;
+function ImportReadersFromWebService (const token:string): TJSONArray;
 
 implementation
 
 uses
-  System.SysUtils, System.IOUtils, ClientAPI.Contacts;
+  System.SysUtils, System.IOUtils;
 
-function GetBooksFromService (const token:string): TJSONValue;
+function GetContactsFromService (const token:string): TJSONValue;
 var
   JSONFileName: string;
   fname: string;
   FileContent: string;
 begin
-  JSONFileName := 'books.json';
+  JSONFileName := 'json\readers.json';
   if FileExists(JSONFileName) then
     fname := JSONFileName
   else if FileExists('..\..\'+JSONFileName) then
@@ -29,11 +29,11 @@ begin
   Result := TJSONObject.ParseJSONValue(FileContent);
 end;
 
-function ImportDataFromBooksService (const token:string): TJSONArray;
+function ImportReadersFromWebService (const token:string): TJSONArray;
 var
   jsValue: TJSONValue;
 begin
-  jsValue := GetBooksFromService (token);
+  jsValue := GetContactsFromService (token);
   if jsValue is TJSONArray then
     Result := jsValue as TJSONArray
   else begin

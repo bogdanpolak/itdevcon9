@@ -375,7 +375,7 @@ object Form1: TForm1
     Padding.Right = 2
     ParentFont = False
     TabOrder = 1
-    object lbBooksAvaliable: TLabel
+    object lbBooksReaded: TLabel
       AlignWithMargins = True
       Left = 7
       Top = 52
@@ -384,8 +384,8 @@ object Form1: TForm1
       Margins.Top = 6
       Margins.Bottom = 0
       Align = alTop
-      Caption = 'Avaliable Books:'
-      ExplicitWidth = 78
+      Caption = 'Readed Books:'
+      ExplicitWidth = 72
     end
     object Splitter1: TSplitter
       Left = 4
@@ -398,7 +398,7 @@ object Form1: TForm1
       ExplicitTop = 125
       ExplicitWidth = 190
     end
-    object lbBooksCooming: TLabel
+    object lbBooksAvaliable: TLabel
       AlignWithMargins = True
       Left = 7
       Top = 211
@@ -407,10 +407,10 @@ object Form1: TForm1
       Margins.Top = 0
       Margins.Bottom = 0
       Align = alTop
-      Caption = 'Cooming Soon:'
-      ExplicitWidth = 72
+      Caption = 'Avaliable Books:'
+      ExplicitWidth = 78
     end
-    object lbxBooksAvaliable: TListBox
+    object lbxBooksReaded: TListBox
       AlignWithMargins = True
       Left = 7
       Top = 68
@@ -425,7 +425,7 @@ object Form1: TForm1
       OnDragOver = lbxBooksDragOver
       OnStartDrag = lbxBooksStartDrag
     end
-    object lbxBooksCooming: TListBox
+    object lbxBooksAvaliable2: TListBox
       AlignWithMargins = True
       Left = 7
       Top = 227
@@ -438,8 +438,6 @@ object Form1: TForm1
       OnDragDrop = lbxBooksDragDrop
       OnDragOver = lbxBooksDragOver
       OnStartDrag = lbxBooksStartDrag
-      ExplicitLeft = 9
-      ExplicitTop = 229
     end
     object btnImport: TButton
       AlignWithMargins = True
