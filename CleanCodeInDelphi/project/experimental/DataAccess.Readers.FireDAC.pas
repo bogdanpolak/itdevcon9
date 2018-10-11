@@ -9,22 +9,24 @@ uses
 type
   TFDReadersDAO = class(TBaseDAO, IReadersDAO)
   strict private
-    FImportField: TBooleanField;
-    FEmailField: TWideStringField;
-    FFirstNameField: TWideStringField;
-    FLastNameField: TWideStringField;
-    FCompanyField: TWideStringField;
-    FDuplicatedField: TBooleanField;
+    FFieldReaderId: TIntegerField;
+    FFieldEmail: TWideStringField;
+    FFieldFirstName: TWideStringField;
+    FFieldLastName: TWideStringField;
+    FFieldCompany: TWideStringField;
+    FFieldBooksRead: TIntegerField;
+    FFieldLastReport: TDateField;
   strict protected
     procedure BindDataSetFields(); override;
   public
     constructor Create(DataSet: TFDDataSet);
-    function fldImport: TBooleanField;
+    function fldReaderId: TIntegerField;
     function fldEmail: TWideStringField;
     function fldFirstName: TWideStringField;
     function fldLastName: TWideStringField;
     function fldCompany: TWideStringField;
-    function fldDuplicated: TBooleanField;
+    function fldBooksRead: TIntegerField;
+    function fldLastReport: TDateField;
     procedure ForEach(proc: TProc<IReadersDAO>);
   end;
 
@@ -36,12 +38,13 @@ procedure TFDReadersDAO.BindDataSetFields;
 begin
   if Assigned(FDataSet) and FDataSet.Active then
   begin
-    FImportField := FDataSet.FieldByName('Import') as TBooleanField;
-    FEmailField := FDataSet.FieldByName('Email') as TWideStringField;
-    FFirstNameField := FDataSet.FieldByName('FirstName') as TWideStringField;
-    FLastNameField := FDataSet.FieldByName('LastName') as TWideStringField;
-    FCompanyField := FDataSet.FieldByName('Company') as TWideStringField;
-    FDuplicatedField := FDataSet.FieldByName('Duplicated') as TBooleanField;
+    FFieldReaderId := FDataSet.FieldByName('ReaderId') as TIntegerField;
+    FFieldEmail := FDataSet.FieldByName('Email') as TWideStringField;
+    FFieldFirstName := FDataSet.FieldByName('FirstName') as TWideStringField;
+    FFieldLastName := FDataSet.FieldByName('LastName') as TWideStringField;
+    FFieldCompany := FDataSet.FieldByName('Company') as TWideStringField;
+    FFieldBooksRead := FDataSet.FieldByName('BooksRead') as TIntegerField;
+    FFieldLastReport := FDataSet.FieldByName('LastReport') as TDateField;
   end
   else
     raise Exception.Create('Error Message');
@@ -53,34 +56,39 @@ begin
   LinkDataSet(DataSet, true);
 end;
 
-function TFDReadersDAO.fldCompany: TWideStringField;
+function TFDReadersDAO.fldBooksRead: TIntegerField;
 begin
-  Result := FCompanyField;
+  Result := FFieldBooksRead;
 end;
 
-function TFDReadersDAO.fldDuplicated: TBooleanField;
+function TFDReadersDAO.fldCompany: TWideStringField;
 begin
-  Result := FDuplicatedField;
+  Result := FFieldCompany;
 end;
 
 function TFDReadersDAO.fldEmail: TWideStringField;
 begin
-  Result := FEmailField;
+  Result := FFieldEmail;
 end;
 
 function TFDReadersDAO.fldFirstName: TWideStringField;
 begin
-  Result := FFirstNameField;
-end;
-
-function TFDReadersDAO.fldImport: TBooleanField;
-begin
-  Result := FImportField;
+  Result := FFieldFirstName;
 end;
 
 function TFDReadersDAO.fldLastName: TWideStringField;
 begin
-  Result := FLastNameField;
+  Result := FFieldLastName;
+end;
+
+function TFDReadersDAO.fldLastReport: TDateField;
+begin
+  Result := FFieldLastReport;
+end;
+
+function TFDReadersDAO.fldReaderId: TIntegerField;
+begin
+  Result := FFieldReaderId;
 end;
 
 procedure TFDReadersDAO.ForEach(proc: TProc<IReadersDAO>);
