@@ -13,39 +13,7 @@ Clean code:
 * doesn't contain duplication
 * is easier and cheaper to maintain
 
-### CC in Delphi
-
-1. Build and use **Naming Convention**
-    * See sample [naming convention](./NamingConvetion.md)
-    * Define it together
-    * Maintain it and follow the rules
-    * Use it during code reviews
-    * Should be common and one for the whole team
-
-2. Use Git as repository server
-    * Subversion is more difficult to maintain and slower
-    * It's easy to migrate history from SVN to Git
-    * Commit you work often
-    * Use meaningful commit messages to explain changes 
-
-3. Define code **Code Style Convention** (code format)
-    * Use code formatter often
-    * Define common company formatter settings and make it easy accessible for each team member
-    * Or maybe the best choice is to use default Embarcadero's settings
-    * Define pre-commit hook to format code automatically or reject commit with unformatted code
-
-4. Zero Warnings Tolerance
-    * Clean all warnings
-    * Sometimes it's stupid, but worth
-    * If remove all of them quickly isn't possible then define task for the whole team to remove some everyday (you will need some analytics to track improvement)
-
-5. Friday Code Refactoring
-    * Arrange weekly - Friday evenings are very common to choose
-    * Start *Friday Code Refactoring* with code reviews
-    * Good code reviews shouldn't be offensive and rules should be useful.
-    * If someone disagree don't push them, but try to understand and then adjust the rules to it.
-
-### Level of Code Maturity
+### Four Levels of Code Maturity
 
 1. Messy code
     * Code as you like, no rules
@@ -69,6 +37,43 @@ Clean code:
     * Set of the good practices
     * Team patterns and principles
     * Testable code
+
+### CC in Delphi
+
+1. Zero Warnings Tolerance
+    * Clean all warnings
+    * Sometimes it's stupid, but worth
+    * If remove all of them quickly isn't possible then define task for the whole team to remove some everyday (you will need some analytics to track improvement)
+
+2. Build and use **Naming Convention**
+    * See sample [naming convention](./NamingConvetion.md)
+    * Define it together
+    * Maintain it and follow the rules
+    * Use it during code reviews
+    * Should be common and one for the whole team
+
+3. Use Git as repository server
+    * Subversion is more difficult to maintain and slower
+    * It's easy to migrate history from SVN to Git
+    * Commit you work often
+    * Use meaningful commit messages to explain changes 
+
+4. Define code **Code Style Convention** (code format)
+    * Use code formatter often
+    * Define common company formatter settings and make it easy accessible for each team member
+    * Or maybe the best choice is to use default Embarcadero's settings
+    * Require formated code to be putted into repository
+    * Define pre-commit hook to format code automatically or reject commit with unformatted code
+
+5. Friday Sessions with Code Refactoring
+    * Reserve 10% of the coding activities for the refactoring
+    * Arrange weekly - Friday evenings are very common to choose
+    * Begin *Friday Refactoring* with code reviews
+    * Focuss on the readable code
+    * Code reviews shouldn't be offensive
+    * Rules should be useful not Uncle Bob's only
+    * If someone disagree don't push them
+    * Try to understand and then adjust the rules to the situation
 
 ### Code Bed smells
 
