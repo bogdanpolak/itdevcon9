@@ -49,15 +49,15 @@ Clean code:
 
 1. Messy code
     * Code as you like, no rules
-    * Just working code (ussually)
+    * Just working code (usually)
 
 2. Bitten code
     * Zero warnings policy
-    * Cleaning unnecessary unit in uses secions
+    * Cleaning unnecessary unit in uses section
     * Try to move units into implementation area
 
 3. Clean code
-    * Formated code
+    * Formatted code
     * Random code reviews
     * Cyclic refactoring tasks
     * Naming convention
