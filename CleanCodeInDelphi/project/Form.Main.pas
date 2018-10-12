@@ -7,7 +7,7 @@ uses
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Grids, Vcl.DBGrids, Data.DB,
   ChromeTabs, ChromeTabsClasses, ChromeTabsTypes,
-  Mock.MainForm, ExtGUI.ListBox.Books;
+  Fake.FDConnection, ExtGUI.ListBox.Books;
 
 type
   TForm1 = class(TForm)
