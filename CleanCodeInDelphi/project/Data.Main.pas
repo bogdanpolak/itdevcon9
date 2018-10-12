@@ -15,12 +15,13 @@ type
     // Readers Table:
     mtabReaders: TFDMemTable;
     mtabReadersReaderId: TIntegerField;
-    mtabReadersEmail: TWideStringField;
     mtabReadersFirstName: TWideStringField;
     mtabReadersLastName: TWideStringField;
+    mtabReadersEmail: TWideStringField;
     mtabReadersCompany: TWideStringField;
     mtabReadersBooksRead: TIntegerField;
     mtabReadersLastReport: TDateField;
+    mtabReadersCreated: TDateField;
     // ------------------------------------------------------
     // Reports Table:
     mtabReports: TFDMemTable;
@@ -36,8 +37,8 @@ type
     mtabBooksPrice: TCurrencyField;
     mtabBooksCurrency: TWideStringField;
     mtabBooksDescription: TWideStringField;
-    FDStanStorageJSONLink1: TFDStanStorageJSONLink;
     // ------------------------------------------------------
+    FDStanStorageJSONLink1: TFDStanStorageJSONLink;
   private
     { Private declarations }
   public
@@ -81,6 +82,13 @@ procedure TDataModMain.OpenDataSets;
 var
   JSONFileName: string;
   fname: string;
+  days: Integer;
+  half: Int64;
+  ms: TMemoryStream;
+  tab: TFDMemTable;
+  j: Integer;
+  recNo: Integer;
+  email: string;
 begin
   JSONFileName := 'json\dbtable-readers.json';
   if FileExists(JSONFileName) then

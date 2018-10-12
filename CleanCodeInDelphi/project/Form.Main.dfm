@@ -35,9 +35,6 @@ object Form1: TForm1
     BevelOuter = bvNone
     Caption = 'pnMain'
     TabOrder = 0
-    ExplicitLeft = 196
-    ExplicitWidth = 456
-    ExplicitHeight = 399
     object ChromeTabs1: TChromeTabs
       AlignWithMargins = True
       Left = 3
@@ -366,7 +363,6 @@ object Form1: TForm1
       LookAndFeel.ScrollButtons.Arrow.Disabled.OutlineAlpha = 200
       Align = alTop
       TabOrder = 0
-      ExplicitWidth = 450
     end
   end
   object GroupBox1: TGroupBox
@@ -421,7 +417,6 @@ object Form1: TForm1
       Margins.Bottom = 0
       Align = alTop
       Caption = 'Avaliable Books:'
-      ExplicitTop = 211
       ExplicitWidth = 78
     end
     object lbxBooksReaded: TListBox
@@ -440,6 +435,7 @@ object Form1: TForm1
       OnDragOver = lbxBooksDragOver
       OnDrawItem = lbxBooksReadedDrawItem
       OnStartDrag = lbxBooksStartDrag
+      ExplicitLeft = 5
     end
     object lbxBooksAvaliable2: TListBox
       AlignWithMargins = True
@@ -454,9 +450,6 @@ object Form1: TForm1
       OnDragDrop = lbxBooksDragDrop
       OnDragOver = lbxBooksDragOver
       OnStartDrag = lbxBooksStartDrag
-      ExplicitTop = 227
-      ExplicitWidth = 176
-      ExplicitHeight = 168
     end
     object btnImport: TButton
       AlignWithMargins = True
@@ -468,7 +461,6 @@ object Form1: TForm1
       Caption = 'btnImport'
       TabOrder = 2
       OnClick = btnImportClick
-      ExplicitWidth = 176
     end
   end
   object tmrAppReady: TTimer

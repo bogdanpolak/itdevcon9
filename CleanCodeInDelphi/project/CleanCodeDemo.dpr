@@ -18,7 +18,8 @@ uses
   DataAccess.Readers in 'experimental\DataAccess.Readers.pas',
   DataAccess.Readers.FireDAC in 'experimental\DataAccess.Readers.FireDAC.pas',
   ClientAPI.Books in 'api\ClientAPI.Books.pas',
-  ClientAPI.Readers in 'api\ClientAPI.Readers.pas';
+  ClientAPI.Readers in 'api\ClientAPI.Readers.pas',
+  ExtGUI.ListBox.Books in 'ExtGUI.ListBox.Books.pas';
 
 {$R *.res}
 

@@ -18,10 +18,6 @@ object DataModMain: TDataModMain
     object mtabReadersReaderId: TIntegerField
       FieldName = 'ReaderId'
     end
-    object mtabReadersEmail: TWideStringField
-      FieldName = 'Email'
-      Size = 50
-    end
     object mtabReadersFirstName: TWideStringField
       FieldName = 'FirstName'
       Size = 100
@@ -29,6 +25,10 @@ object DataModMain: TDataModMain
     object mtabReadersLastName: TWideStringField
       FieldName = 'LastName'
       Size = 100
+    end
+    object mtabReadersEmail: TWideStringField
+      FieldName = 'Email'
+      Size = 50
     end
     object mtabReadersCompany: TWideStringField
       FieldName = 'Company'
@@ -39,6 +39,9 @@ object DataModMain: TDataModMain
     end
     object mtabReadersLastReport: TDateField
       FieldName = 'LastReport'
+    end
+    object mtabReadersCreated: TDateField
+      FieldName = 'Created'
     end
   end
   object mtabReports: TFDMemTable
