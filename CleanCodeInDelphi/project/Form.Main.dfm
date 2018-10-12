@@ -3,7 +3,7 @@ object Form1: TForm1
   Top = 0
   Caption = 'Form1'
   ClientHeight = 431
-  ClientWidth = 655
+  ClientWidth = 745
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,7 +11,6 @@ object Form1: TForm1
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
   PixelsPerInch = 96
@@ -28,18 +27,19 @@ object Form1: TForm1
     AlignWithMargins = True
     Left = 243
     Top = 3
-    Width = 409
+    Width = 499
     Height = 425
     Margins.Left = 0
     Align = alClient
     BevelOuter = bvNone
     Caption = 'pnMain'
     TabOrder = 0
+    ExplicitWidth = 409
     object ChromeTabs1: TChromeTabs
       AlignWithMargins = True
       Left = 3
       Top = 3
-      Width = 403
+      Width = 493
       Height = 30
       OnChange = ChromeTabs1Change
       OnButtonCloseTabClick = ChromeTabs1ButtonCloseTabClick
@@ -363,6 +363,7 @@ object Form1: TForm1
       LookAndFeel.ScrollButtons.Arrow.Disabled.OutlineAlpha = 200
       Align = alTop
       TabOrder = 0
+      ExplicitWidth = 403
     end
   end
   object GroupBox1: TGroupBox
@@ -426,16 +427,9 @@ object Form1: TForm1
       Width = 221
       Height = 143
       Margins.Bottom = 0
-      Style = lbOwnerDrawFixed
       Align = alTop
-      DragMode = dmAutomatic
-      ItemHeight = 50
+      ItemHeight = 13
       TabOrder = 0
-      OnDragDrop = lbxBooksDragDrop
-      OnDragOver = lbxBooksDragOver
-      OnDrawItem = lbxBooksReadedDrawItem
-      OnStartDrag = lbxBooksStartDrag
-      ExplicitLeft = 5
     end
     object lbxBooksAvaliable2: TListBox
       AlignWithMargins = True
@@ -444,12 +438,8 @@ object Form1: TForm1
       Width = 221
       Height = 187
       Align = alClient
-      DragMode = dmAutomatic
       ItemHeight = 13
       TabOrder = 1
-      OnDragDrop = lbxBooksDragDrop
-      OnDragOver = lbxBooksDragOver
-      OnStartDrag = lbxBooksStartDrag
     end
     object btnImport: TButton
       AlignWithMargins = True

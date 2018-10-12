@@ -6,27 +6,8 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Grids, Vcl.DBGrids, Data.DB,
-
   ChromeTabs, ChromeTabsClasses, ChromeTabsTypes,
-  Mock.MainForm, System.Generics.Collections;
-
-type
-  TBook = class
-    status: string;
-    title: string;
-    isbn: string;
-    author: string;
-    date: string;
-    pages: integer;
-    price: currency;
-    currency: string;
-    description: string;
-  end;
-
-  TBookCollection = class(TObjectList<TBook>)
-  public
-    procedure LoadDataFromOpenAPI(const token: string);
-  end;
+  Mock.MainForm, ExtGUI.ListBox.Books;
 
 type
   TForm1 = class(TForm)
@@ -47,22 +28,12 @@ type
       var Close: Boolean);
     procedure ChromeTabs1Change(Sender: TObject; ATab: TChromeTab;
       TabChangeType: TTabChangeType);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormResize(Sender: TObject);
-    procedure lbxBooksStartDrag(Sender: TObject; var DragObject:
-        TDragObject);
-    procedure lbxBooksDragDrop(Sender, Source: TObject; X, Y: Integer);
-    procedure lbxBooksDragOver(Sender, Source: TObject; X, Y: Integer;
-        State: TDragState; var Accept: Boolean);
-    procedure lbxBooksReadedDrawItem(Control: TWinControl; Index: Integer; Rect:
-        TRect; State: TOwnerDrawState);
     procedure Splitter1Moved(Sender: TObject);
     procedure tmrAppReadyTimer(Sender: TObject);
   private
     isDeveloperMode: Boolean;
     isDatabaseOK: Boolean;
-    ReadedBooks: TBookCollection;
-    AvaliableXBooks: TBookCollection;
     DragedIdx: Integer;
     procedure ResizeGroupBox();
   public
@@ -87,7 +58,6 @@ const
   // SecurePassword = AES 128 ('masterkey',SecureKey)
   SecurePassword = 'hC52IiCv4zYQY2PKLlSvBaOXc14X41Mc1rcVS6kyr3M=';
   Client_API_Token = '20be805d-9cea27e2-a588efc5-1fceb84d-9fb4b67c';
-  Books_API_Token = 'BOOKS-arg58d8jmefcu5-1fceb';
 
 resourcestring
   SWelcomeScreen = 'Ekran powitalny';
@@ -276,117 +246,6 @@ begin
   isDeveloperMode := False;
 {$ENDIF}
   pnMain.Caption := '';
-  ReadedBooks := TBookCollection.Create();
-  AvaliableXBooks := TBookCollection.Create();
-end;
-
-procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
-begin
-  ReadedBooks.Free;
-  AvaliableXBooks.Free;
-end;
-
-procedure TForm1.lbxBooksStartDrag(Sender: TObject; var DragObject:
-    TDragObject);
-var
-  lbx: TListBox;
-begin
-  lbx := Sender as TListBox;
-  DragedIdx := lbx.ItemIndex;
-end;
-
-procedure TForm1.lbxBooksDragDrop(Sender, Source: TObject; X, Y:
-    Integer);
-var
-  lbx2: TListBox;
-  lbx1: TListBox;
-  b: TBook;
-  srcList: TBookCollection;
-  dstList: TBookCollection;
-begin
-  lbx1 := Source as TListBox;
-  lbx2 := Sender as TListBox;
-  b := lbx1.Items.Objects[DragedIdx] as TBook;
-  if lbx1=lbxBooksReaded then begin
-    srcList := ReadedBooks;
-    dstList := AvaliableXBooks;
-  end
-  else begin
-    srcList := AvaliableXBooks;
-    dstList := ReadedBooks;
-  end;
-  dstList.Add(srcList.Extract(b));
-  lbx1.Items.Delete(DragedIdx);
-  lbx2.AddItem(b.title, b);
-end;
-
-procedure TForm1.lbxBooksDragOver(Sender, Source: TObject; X, Y:
-    Integer; State: TDragState; var Accept: Boolean);
-begin
-  Accept := (Source is TListBox) and (DragedIdx>=0) and (Sender <> Source);
-end;
-
-procedure TForm1.lbxBooksReadedDrawItem(Control: TWinControl; Index: Integer;
-    Rect: TRect; State: TOwnerDrawState);
-var
-  s: string;
-  ACanvas: TCanvas;
-  b: TBook;
-  r2: TRect;
-  lbx: TListBox;
-  colorTextTitle: Integer;
-  colorTextAuthor: Integer;
-  colorBackground: Integer;
-  colorGutter: Integer;
-begin
-  // TOwnerDrawState = set of (odSelected, odGrayed, odDisabled, odChecked,
-  // odFocused, odDefault, odHotLight, odInactive, odNoAccel, odNoFocusRect,
-  // odReserved1, odReserved2, odComboBoxEdit);
-  lbx := lbxBooksReaded;
-
-  // if (odSelected in State) and (odFocused in State) then
-  if (odSelected in State) then
-  begin
-    colorGutter := $f0ffd0;
-    colorTextTitle := clHighlightText;
-    colorTextAuthor := $ffffc0;
-    colorBackground := clHighlight;
-  end
-  else
-  begin
-    colorGutter := $a0ff20;
-    colorTextTitle := lbx.Font.Color;
-    colorTextAuthor := $909000;
-    colorBackground := lbx.Color;
-  end;
-  b := lbx.Items.Objects[Index] as TBook;
-  s := b.title;
-  ACanvas := lbx.Canvas;
-  ACanvas.Brush.Color := colorBackground;
-  r2 := Rect;  r2.Left := 0;
-  ACanvas.FillRect(r2);
-  ACanvas.Brush.Color := colorGutter;
-  r2 := Rect; r2.Left := 0;
-  InflateRect(r2,-3,-5);
-  r2.Right := r2.Left+6;
-  ACanvas.FillRect(r2);
-  ACanvas.Brush.Color := colorBackground;
-  Rect.Left := Rect.Left + 13;
-  ACanvas.Font.Color := colorTextAuthor;
-  ACanvas.Font.Size := lbx.Font.Size;
-  ACanvas.TextOut(13,Rect.Top+2,b.author);
-  r2 := Rect;
-  r2.Left := 13;
-  r2.Top := r2.Top + Canvas.TextHeight('Ag');
-  ACanvas.Font.Color := colorTextTitle;
-  ACanvas.Font.Size := lbx.Font.Size+2;
-  InflateRect(r2,-2,-1);
-  DrawText(ACanvas.Handle,
-    PChar(s),
-    Length(s),
-    r2,
-    // DT_LEFT or DT_WORDBREAK or DT_CALCRECT);
-    DT_LEFT or DT_WORDBREAK);
 end;
 
 procedure TForm1.ResizeGroupBox();
@@ -438,6 +297,9 @@ var
   o: Boolean;
   AllBooks: TBookCollection;
   OtherBooks: TBookCollection;
+  booksCfg: TBooksListBoxConfigurator;
+  DataSrc: TDataSource;
+  DataGrid: TDBGrid;
 begin
   tmrAppReady.Enabled := False;
   if isDeveloperMode then
@@ -507,56 +369,26 @@ begin
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
+  // * Initialize ListBox'es for books
+  // * Load books form database
+  // * Setup drag&drop functionality for two list boxes
+  // * Setup OwnerDraw mode
   //
+  TBooksListBoxConfigurator.Create(self).PrepareListBoxes(lbxBooksReaded,
+    lbxBooksAvaliable2);
+  // ----------------------------------------------------------
+  // ----------------------------------------------------------
   //
-  AllBooks := TBookCollection.Create(false);
-  OtherBooks := TBookCollection.Create();
-  AllBooks.LoadDataFromOpenAPI(Books_API_Token);
-  for b in AllBooks do
-  begin
-    if b.status = 'on-shelf' then
-      ReadedBooks.Add(b)
-    else if b.status = 'avaliable' then
-      AvaliableXBooks.Add(b)
-    else
-      OtherBooks.Add(b);
-  end;
-  AllBooks.Free;
-  OtherBooks.Free;
-  for b in ReadedBooks do
-    lbxBooksReaded.AddItem(b.title, b);
-  for b in AvaliableXBooks do
-    lbxBooksAvaliable2.AddItem(b.title, b);
-end;
-
-{ TBookCollection }
-
-procedure TBookCollection.LoadDataFromOpenAPI(const token: string);
-var
-  jsBooks: TJSONArray;
-  i: Integer;
-  jsBook: TJSONObject;
-  b: TBook;
-  fs: TFormatSettings;
-  s: string;
-begin
-  jsBooks := ImportBooksFromWebService(token);
-  for i := 0 to jsBooks.Count-1 do
-  begin
-    jsBook := jsBooks.Items[i] as TJSONObject;
-    b := TBook.Create;
-    b.status := jsBook.Values['status'].Value;
-    b.title := jsBook.Values['title'].Value;
-    b.isbn := jsBook.Values['isbn'].Value;
-    b.author := jsBook.Values['author'].Value;
-    b.date := jsBook.Values['date'].Value;
-    b.pages := (jsBook.Values['pages'] as TJSONNumber).AsInt;
-    b.price := StrToCurr( jsBook.Values['price'].Value);
-    b.currency := jsBook.Values['currency'].Value;
-    b.description := jsBook.Values['description'].Value;
-    self.Add(b);
-  end;
-  jsBooks.Free;
+  // Create Books Table
+  DataModMain.CreateBooksTable;
+  DataSrc := TDataSource.Create(frm);
+  DataGrid := TDBGrid.Create(frm);
+  DataGrid.AlignWithMargins := True;
+  DataGrid.Parent := frm;
+  DataGrid.Align := alClient;
+  DataGrid.DataSource := datasrc;
+  DataSrc.DataSet := DataModMain.mtabBooks;
+  AutoSizeColumns(DataGrid);
 end;
 
 end.
