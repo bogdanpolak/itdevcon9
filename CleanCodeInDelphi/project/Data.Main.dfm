@@ -56,51 +56,7 @@ object DataModMain: TDataModMain
     Top = 24
   end
   object mtabBooks: TFDMemTable
-    Active = True
-    FieldDefs = <
-      item
-        Name = 'ISBN'
-        DataType = ftWideString
-        Size = 20
-      end
-      item
-        Name = 'Title'
-        DataType = ftWideString
-        Size = 100
-      end
-      item
-        Name = 'Authors'
-        DataType = ftWideString
-        Size = 100
-      end
-      item
-        Name = 'Status'
-        DataType = ftWideString
-        Size = 15
-      end
-      item
-        Name = 'ReleseDate'
-        DataType = ftDate
-      end
-      item
-        Name = 'Pages'
-        DataType = ftInteger
-      end
-      item
-        Name = 'Price'
-        DataType = ftCurrency
-        Precision = 19
-      end
-      item
-        Name = 'Currency'
-        DataType = ftWideString
-        Size = 10
-      end
-      item
-        Name = 'Description'
-        DataType = ftWideString
-        Size = 2000
-      end>
+    FieldDefs = <>
     IndexDefs = <>
     FetchOptions.AssignedValues = [evMode]
     FetchOptions.Mode = fmAll
@@ -135,10 +91,15 @@ object DataModMain: TDataModMain
     end
     object mtabBooksPrice: TCurrencyField
       FieldName = 'Price'
+      DisplayFormat = '###,###,###.00'
+      currency = False
     end
     object mtabBooksCurrency: TWideStringField
       FieldName = 'Currency'
       Size = 10
+    end
+    object mtabBooksImported: TDateField
+      FieldName = 'Imported'
     end
     object mtabBooksDescription: TWideStringField
       FieldName = 'Description'

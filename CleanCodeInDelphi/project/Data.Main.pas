@@ -36,11 +36,11 @@ type
     mtabBooksPages: TIntegerField;
     mtabBooksPrice: TCurrencyField;
     mtabBooksCurrency: TWideStringField;
+    mtabBooksImported: TDateField;
     mtabBooksDescription: TWideStringField;
     // ------------------------------------------------------
     FDStanStorageJSONLink1: TFDStanStorageJSONLink;
   private
-    { Private declarations }
   public
     procedure ImportNewReadersFromJSON(jsData: TJSONArray);
     procedure OpenDataSets;
@@ -52,8 +52,34 @@ var
 implementation
 
 {%CLASSGROUP 'Vcl.Controls.TControl'}
+
+uses
+  ClientAPI.Books;
 {$R *.dfm}
 { TDataModMain }
+
+function BooksToDateTime(const s: string): TDateTime;
+const
+  months: array [1 .. 12] of string = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
+var
+  m: string;
+  y: string;
+  i: Integer;
+  mm: Integer;
+  yy: Integer;
+begin
+  m := s.Substring(0, 3);
+  y := s.Substring(4);
+  mm := 0;
+  for i := 1 to 12 do
+    if months[i].ToUpper = m.ToUpper then
+      mm := i;
+  if mm = 0 then
+    raise ERangeError.Create('Incorect mont name in the date: ' + s);
+  yy := y.ToInteger();
+  Result := EncodeDate(yy, mm, 1);
+end;
 
 procedure TDataModMain.ImportNewReadersFromJSON(jsData: TJSONArray);
 var
@@ -90,6 +116,10 @@ var
   recNo: Integer;
   email: string;
 begin
+  // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  //
+  // Load and open Readers table
   JSONFileName := 'json\dbtable-readers.json';
   if FileExists(JSONFileName) then
     fname := JSONFileName
@@ -97,7 +127,20 @@ begin
     fname := '..\..\' + JSONFileName
   else
     raise Exception.Create('Error Message');
-  mtabReaders.LoadFromFile(fname);
+  mtabReaders.LoadFromFile(fname,sfJSON);
+  // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  //
+  // Load and open Books table
+  JSONFileName := 'json\dbtable-books.json';
+  if FileExists(JSONFileName) then
+    fname := JSONFileName
+  else if FileExists('..\..\' + JSONFileName) then
+    fname := '..\..\' + JSONFileName
+  else
+    raise Exception.Create('Error Message');
+  mtabBooks.LoadFromFile(fname,sfJSON);
+
 end;
 
 end.

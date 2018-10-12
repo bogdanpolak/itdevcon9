@@ -7,7 +7,7 @@ uses
   Vcl.ComCtrls, // TODO: To be cleaned
   Winapi.Windows,
   System.SysUtils, // TODO: To be cleaned
-  System.JSON,  System.Generics.Collections;
+  System.JSON, System.Generics.Collections;
 
 type
   TBook = class
@@ -15,16 +15,17 @@ type
     title: string;
     isbn: string;
     author: string;
-    date: string;
+    releseDate: TDateTime;
     pages: integer;
     price: currency;
     currency: string;
+    imported: TDateTime;
     description: string;
   end;
 
   TBookCollection = class(TObjectList<TBook>)
   public
-    procedure LoadDataFromOpenAPI(const token: string);
+    procedure LoadDataSet();
   end;
 
 type
@@ -39,20 +40,21 @@ type
     procedure EventOnDragDrop(Sender, Source: TObject; X, Y: integer);
     procedure EventOnDragOver(Sender, Source: TObject; X, Y: integer;
       State: TDragState; var Accept: Boolean);
-    procedure EventOnDrawItem(Control: TWinControl; Index: Integer; Rect: TRect;
+    procedure EventOnDrawItem(Control: TWinControl; Index: integer; Rect: TRect;
       State: TOwnerDrawState);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    procedure PrepareListBoxes (lbxOnShelf, lbxAvaliable: TListBox);
+    procedure PrepareListBoxes(lbxOnShelf, lbxAvaliable: TListBox);
   end;
 
 implementation
 
-uses ClientAPI.Books;
+uses ClientAPI.Books, // TODO: remove
+  Data.Main;
 
 const
-  Books_API_Token = 'BOOKS-arg58d8jmefcu5-1fceb';
+  Books_API_Token = 'BOOKS-arg58d8jmefcu5-1fceb'; // TODO: remove
 
 constructor TBooksListBoxConfigurator.Create(AOwner: TComponent);
 var
@@ -65,7 +67,7 @@ begin
   FBooksAvaliable := TBookCollection.Create();
   AllBooks := TBookCollection.Create(false);
   OtherBooks := TBookCollection.Create();
-  AllBooks.LoadDataFromOpenAPI(Books_API_Token);
+  AllBooks.LoadDataSet;
   for b in AllBooks do
   begin
     if b.status = 'on-shelf' then
@@ -127,7 +129,6 @@ begin
   DragedIdx := lbx.ItemIndex;
 end;
 
-
 procedure TBooksListBoxConfigurator.EventOnDragDrop(Sender, Source: TObject;
   X, Y: integer);
 var
@@ -162,17 +163,17 @@ begin
 end;
 
 procedure TBooksListBoxConfigurator.EventOnDrawItem(Control: TWinControl;
-    Index: Integer; Rect: TRect; State: TOwnerDrawState);
+  Index: integer; Rect: TRect; State: TOwnerDrawState);
 var
   s: string;
   ACanvas: TCanvas;
   b: TBook;
   r2: TRect;
   lbx: TListBox;
-  colorTextTitle: Integer;
-  colorTextAuthor: Integer;
-  colorBackground: Integer;
-  colorGutter: Integer;
+  colorTextTitle: integer;
+  colorTextAuthor: integer;
+  colorBackground: integer;
+  colorGutter: integer;
 begin
   // TOwnerDrawState = set of (odSelected, odGrayed, odDisabled, odChecked,
   // odFocused, odDefault, odHotLight, odInactive, odNoAccel, odNoFocusRect,
@@ -182,14 +183,14 @@ begin
   // if (odSelected in State) and (odFocused in State) then
   if (odSelected in State) then
   begin
-    colorGutter := $f0ffd0;
+    colorGutter := $F0FFD0;
     colorTextTitle := clHighlightText;
-    colorTextAuthor := $ffffc0;
+    colorTextAuthor := $FFFFC0;
     colorBackground := clHighlight;
   end
   else
   begin
-    colorGutter := $a0ff20;
+    colorGutter := $A0FF20;
     colorTextTitle := lbx.Font.Color;
     colorTextAuthor := $909000;
     colorBackground := lbx.Color;
@@ -198,60 +199,55 @@ begin
   s := b.title;
   ACanvas := lbx.Canvas;
   ACanvas.Brush.Color := colorBackground;
-  r2 := Rect;  r2.Left := 0;
+  r2 := Rect;
+  r2.Left := 0;
   ACanvas.FillRect(r2);
   ACanvas.Brush.Color := colorGutter;
-  r2 := Rect; r2.Left := 0;
-  InflateRect(r2,-3,-5);
-  r2.Right := r2.Left+6;
+  r2 := Rect;
+  r2.Left := 0;
+  InflateRect(r2, -3, -5);
+  r2.Right := r2.Left + 6;
   ACanvas.FillRect(r2);
   ACanvas.Brush.Color := colorBackground;
   Rect.Left := Rect.Left + 13;
   ACanvas.Font.Color := colorTextAuthor;
   ACanvas.Font.Size := lbx.Font.Size;
-  ACanvas.TextOut(13,Rect.Top+2,b.author);
+  ACanvas.TextOut(13, Rect.Top + 2, b.author);
   r2 := Rect;
   r2.Left := 13;
   r2.Top := r2.Top + ACanvas.TextHeight('Ag');
   ACanvas.Font.Color := colorTextTitle;
-  ACanvas.Font.Size := lbx.Font.Size+2;
-  InflateRect(r2,-2,-1);
-  DrawText(ACanvas.Handle,
-    PChar(s),
-    Length(s),
-    r2,
+  ACanvas.Font.Size := lbx.Font.Size + 2;
+  InflateRect(r2, -2, -1);
+  DrawText(ACanvas.Handle, PChar(s), Length(s), r2,
     // DT_LEFT or DT_WORDBREAK or DT_CALCRECT);
     DT_LEFT or DT_WORDBREAK);
 end;
 
 { TBookCollection }
 
-procedure TBookCollection.LoadDataFromOpenAPI(const token: string);
+procedure TBookCollection.LoadDataSet;
 var
-  jsBooks: TJSONArray;
-  i: Integer;
-  jsBook: TJSONObject;
   b: TBook;
-  fs: TFormatSettings;
-  s: string;
 begin
-  jsBooks := ImportBooksFromWebService(token);
-  for i := 0 to jsBooks.Count-1 do
+  DataModMain.mtabBooks.First;
+  while not DataModMain.mtabBooks.Eof do
   begin
-    jsBook := jsBooks.Items[i] as TJSONObject;
     b := TBook.Create;
-    b.status := jsBook.Values['status'].Value;
-    b.title := jsBook.Values['title'].Value;
-    b.isbn := jsBook.Values['isbn'].Value;
-    b.author := jsBook.Values['author'].Value;
-    b.date := jsBook.Values['date'].Value;
-    b.pages := (jsBook.Values['pages'] as TJSONNumber).AsInt;
-    b.price := StrToCurr( jsBook.Values['price'].Value);
-    b.currency := jsBook.Values['currency'].Value;
-    b.description := jsBook.Values['description'].Value;
+    b.isbn := DataModMain.mtabBooksISBN.Value;
+    b.title := DataModMain.mtabBooksTitle.Value;
+    b.author := DataModMain.mtabBooksAuthors.Value;
+    b.status := DataModMain.mtabBooksStatus.Value;
+    b.releseDate := DataModMain.mtabBooksReleseDate.Value;
+    b.pages := DataModMain.mtabBooksPages.Value;
+    b.price := DataModMain.mtabBooksPrice.Value;
+    b.currency := DataModMain.mtabBooksCurrency.Value;
+    b.imported := DataModMain.mtabBooksImported.Value;
+    b.description := DataModMain.mtabBooksDescription.Value;
     self.Add(b);
+    DataModMain.mtabBooks.Next;
   end;
-  jsBooks.Free;
+  DataModMain.mtabBooks.First;
 end;
 
 end.

@@ -197,7 +197,6 @@ begin
     DBGrid.DataSource := datasrc;
     // --------
     DataModMain.ImportNewReadersFromJSON(jsData);
-    DataModMain.OpenDataSets;
     datasrc.DataSet := DataModMain.mtabReaders;
     AutoSizeColumns(DBGrid);
   finally
@@ -369,6 +368,10 @@ begin
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
+  DataModMain.OpenDataSets;
+  // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  //
   // * Initialize ListBox'es for books
   // * Load books form database
   // * Setup drag&drop functionality for two list boxes
@@ -380,7 +383,6 @@ begin
   // ----------------------------------------------------------
   //
   // Create Books Table
-  DataModMain.CreateBooksTable;
   DataSrc := TDataSource.Create(frm);
   DataGrid := TDBGrid.Create(frm);
   DataGrid.AlignWithMargins := True;
