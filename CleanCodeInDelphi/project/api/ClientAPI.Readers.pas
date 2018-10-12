@@ -34,12 +34,14 @@ var
   jsValue: TJSONValue;
 begin
   jsValue := GetContactsFromService (token);
-  if jsValue is TJSONArray then
-    Result := jsValue as TJSONArray
-  else begin
+  if not Assigned(jsValue)then
+    raise Exception.Create('Can''t connect with Open API service. No data')
+  else if not( jsValue is TJSONArray ) then
+  begin
     jsValue.Free;
-    Result := nil;
+    raise Exception.Create('Can''t load data form Open API service.');
   end;
+  Result := jsValue as TJSONArray
 end;
 
 end.

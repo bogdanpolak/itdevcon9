@@ -7,30 +7,70 @@
                 "book-isbn": "9781788621304",
                 "book-title": "Delphi Cookbook - Third Edition",
                 "rating": 10,
-                "oppinion": "Great! There are lots of an easy to implement recepies. Very useful for the future. I recommend it to an every Delphi developer."
+                "oppinion": "Great! There are lots of an easy to implement recepies. Very useful for the future. I recommend it to an every Delphi developer.",
+                "created": "2018-07-27T18:30:49Z"
 	},
 	{
 		"firstname": "Gervasio",
 		"lastname": "Brancato",
 		"email": "rervasio3419@email.it",
-		"company": "Komerci"
+		"company": "Komerci",
+                "book-isbn": "",
+                "book-title": "",
+                "rating": 1,
+                "oppinion": "",
+                "created": "2018-08-15T20:12:31Z"
 	},
 	{
 		"firstname": "Rolando",
 		"lastname": "D'Ottavio",
 		"email": "r.ottavio@alice.it",
-		"company": "Motife Srl"
+		"company": "Motife Srl",
+                "book-isbn": "",
+                "book-title": "",
+                "rating": 2,
+                "oppinion": "",
+                "created": "2018-08-23T10:02:17Z"
 	},
 	{
-		"id": 104,
 		"firstname": "Adolfo",
 		"lastname": "Alba",
-		"email": "aa9876543@gmail.com"
+		"email": "aa9876543@gmail.com",
+                "book-isbn": "",
+                "book-title": "",
+                "rating": 3,
+                "oppinion": "",
+                "created": "2018-09-02T19:55:43Z"
 	},
 	{
-		"id": 105,
 		"firstname": "Pancrazio",
 		"lastname": "Muto",
-		"email": "SuperPancrazio70@email.it"
-	}
+		"email": "SuperPancrazio70@email.it",
+                "book-isbn": "",
+                "book-title": "",
+                "rating": 4,
+                "oppinion": "",
+                "created": "2018-09-14T22:32:31Z"
+	},
+        {
+                "firstname": "Jefford",
+                "lastname": "Erick",
+                "email": "ejeffordn@cbc.ca",
+                "company": "Sawayn and Sons",
+                "book-isbn": "",
+                "book-title": "",
+                "rating": 5,
+                "oppinion": "",
+                "created": "2018-09-20T15:39:49Z"
+        },
+        {
+                "firstname": "Owbridge",
+                "lastname": "Ian",
+                "email": "iowbridge1v@joomla.org",
+                "book-isbn": "",
+                "book-title": "",
+                "rating": 6,
+                "oppinion": "",
+                "created": "2018-09-27T23:02:21Z"
+        }
 ]

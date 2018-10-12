@@ -42,8 +42,9 @@ type
     FDStanStorageJSONLink1: TFDStanStorageJSONLink;
   private
   public
-    procedure ImportNewReadersFromJSON(jsData: TJSONArray);
     procedure OpenDataSets;
+    function GetMaxValueInDataSet(DataSet: TDataSet;
+      const fieldName: string): integer;
   end;
 
 var
@@ -65,9 +66,9 @@ const
 var
   m: string;
   y: string;
-  i: Integer;
-  mm: Integer;
-  yy: Integer;
+  i: integer;
+  mm: integer;
+  yy: integer;
 begin
   m := s.Substring(0, 3);
   y := s.Substring(4);
@@ -76,31 +77,24 @@ begin
     if months[i].ToUpper = m.ToUpper then
       mm := i;
   if mm = 0 then
-    raise ERangeError.Create('Incorect mont name in the date: ' + s);
+    raise ERangeError.Create('Incorect month name in the date: ' + s);
   yy := y.ToInteger();
   Result := EncodeDate(yy, mm, 1);
 end;
 
-procedure TDataModMain.ImportNewReadersFromJSON(jsData: TJSONArray);
+function TDataModMain.GetMaxValueInDataSet(DataSet: TDataSet;
+  const fieldName: string): integer;
 var
-  i: Integer;
-  row: TJSONObject;
-  email: string;
-  firstName: string;
-  lastName: string;
-  company: string;
+  v: Integer;
 begin
-  for i := 0 to jsData.Count - 1 do
+  Result := -1;
+  DataSet.First;
+  while not DataSet.Eof do
   begin
-    row := jsData.Items[i] as TJSONObject;
-    email := row.Values['email'].Value;
-    if Assigned(row.Values['firstname']) and not row.Values['firstname'].Null
-    then
-      firstName := row.Values['firstname'].Value;
-    if Assigned(row.Values['lastname']) and not row.Values['lastname'].Null then
-      lastName := row.Values['lastname'].Value;
-    if Assigned(row.Values['company']) and not row.Values['company'].Null then
-      company := row.Values['company'].Value;
+    v := DataSet.FieldByName(fieldName).AsInteger;
+    if v>Result then
+      Result := v;
+    DataSet.Next;
   end;
 end;
 
@@ -108,12 +102,12 @@ procedure TDataModMain.OpenDataSets;
 var
   JSONFileName: string;
   fname: string;
-  days: Integer;
+  days: integer;
   half: Int64;
   ms: TMemoryStream;
   tab: TFDMemTable;
-  j: Integer;
-  recNo: Integer;
+  j: integer;
+  recNo: integer;
   email: string;
 begin
   // ----------------------------------------------------------
@@ -127,7 +121,7 @@ begin
     fname := '..\..\' + JSONFileName
   else
     raise Exception.Create('Error Message');
-  mtabReaders.LoadFromFile(fname,sfJSON);
+  mtabReaders.LoadFromFile(fname, sfJSON);
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
@@ -139,7 +133,7 @@ begin
     fname := '..\..\' + JSONFileName
   else
     raise Exception.Create('Error Message');
-  mtabBooks.LoadFromFile(fname,sfJSON);
+  mtabBooks.LoadFromFile(fname, sfJSON);
 
 end;
 

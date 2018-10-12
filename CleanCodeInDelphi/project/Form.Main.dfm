@@ -34,7 +34,6 @@ object Form1: TForm1
     BevelOuter = bvNone
     Caption = 'pnMain'
     TabOrder = 0
-    ExplicitWidth = 409
     object ChromeTabs1: TChromeTabs
       AlignWithMargins = True
       Left = 3
@@ -363,7 +362,6 @@ object Form1: TForm1
       LookAndFeel.ScrollButtons.Arrow.Disabled.OutlineAlpha = 200
       Align = alTop
       TabOrder = 0
-      ExplicitWidth = 403
     end
   end
   object GroupBox1: TGroupBox

@@ -48,7 +48,7 @@ implementation
 {$R *.dfm}
 
 uses
-  System.StrUtils, System.JSON, System.Math,
+  System.StrUtils, System.JSON, System.Math, System.DateUtils,
   Frame.Welcome, Consts.Application, Utils.CipherAES128, Frame.Import,
   Units.Main, Data.Main, ClientAPI.Readers, ClientAPI.Books;
 
@@ -71,7 +71,7 @@ resourcestring
   StrNotSupportedDBVersion = 'B³êdna wersja bazy danych. Proszê' +
     ' zaktualizowaæ strukturê bazy.';
 
-function DBVersionToString(VerDB: integer): string;
+function DBVersionToString(VerDB: Integer): string;
 begin
   Result := (VerDB div 1000).ToString + '.' + (VerDB mod 1000).ToString;
 end;
@@ -82,14 +82,14 @@ begin
 end;
 
 function SumHeightForChildrens(Parent: TWinControl;
-  ControlsToExclude: TArray<TControl>): integer;
+  ControlsToExclude: TArray<TControl>): Integer;
 var
-  i: integer;
+  i: Integer;
   ctrl: Vcl.Controls.TControl;
   isExcluded: Boolean;
-  j: integer;
-  sumHeight: integer;
-  ctrlHeight: integer;
+  j: Integer;
+  sumHeight: Integer;
+  ctrlHeight: Integer;
 begin
   sumHeight := 0;
   for i := 0 to Parent.ControlCount - 1 do
@@ -111,13 +111,13 @@ begin
   Result := sumHeight;
 end;
 
-function AutoSizeColumns(DBGrid: TDBGrid; const MaxRows: integer = 25): integer;
+function AutoSizeColumns(DBGrid: TDBGrid; const MaxRows: Integer = 25): Integer;
 
 var
   DataSet: TDataSet;
   Bookmark: TBookmark;
-  Count, i: integer;
-  ColumnsWidth: array of integer;
+  Count, i: Integer;
+  ColumnsWidth: array of Integer;
 begin
   SetLength(ColumnsWidth, DBGrid.Columns.Count);
   for i := 0 to DBGrid.Columns.Count - 1 do
@@ -162,6 +162,14 @@ begin
   Result := Count - DBGrid.ClientWidth;
 end;
 
+{ TODO: Change function name [jsonObjectHasValue] }
+function avaliable(jsObject: TJSONObject; const fieldName: string)
+  : Boolean; inline;
+begin
+  Result := Assigned(jsObject.Values[fieldName]) and not jsObject.Values
+    [fieldName].Null;
+end;
+
 procedure TForm1.btnImportClick(Sender: TObject);
 var
   frm: TFrameImport;
@@ -169,36 +177,103 @@ var
   jsData: TJSONArray;
   DBGrid: TDBGrid;
   datasrc: TDataSource;
+  i: Integer;
+  jsRow: TJSONObject;
+  email: string;
+  firstName: string;
+  lastName: string;
+  company: string;
+  bookISBN: string;
+  bookTitle: string;
+  rating: Integer;
+  oppinion: string;
+  created: string;
+  ss: array of string;
+  v: string;
+  dt: TDateTime;
+  maxID: Integer;
 begin
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
-  // Create and show Import Frame
+  // 1. Create TFrameImport.
+  // 2. Embed frame in pnMain (show)
+  // 3. Add new ChromeTab
   //
   frm := TFrameImport.Create(pnMain);
   frm.Parent := pnMain;
   frm.Visible := True;
   frm.Align := alClient;
   tab := ChromeTabs1.Tabs.Add;
-  tab.Caption := 'Import';
+  tab.Caption := 'Readers';
   tab.Data := frm;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
-  // Import data from OpenAPI
+  // Add TDBGrid to TFrameImport
+  //
+  datasrc := TDataSource.Create(frm);
+  DBGrid := TDBGrid.Create(frm);
+  DBGrid.AlignWithMargins := True;
+  DBGrid.Parent := frm;
+  DBGrid.Align := alClient;
+  DBGrid.DataSource := datasrc;
+  datasrc.DataSet := DataModMain.mtabReaders;
+  AutoSizeColumns(DBGrid);
+  // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  //
+  // Import new reders data from OpenAPI
   //
   jsData := ImportReadersFromWebService(Client_API_Token);
   try
-    datasrc := TDataSource.Create(frm);
-    DBGrid := TDBGrid.Create(frm);
-    DBGrid.AlignWithMargins := True;
-    DBGrid.Parent := frm;
-    DBGrid.Align := alClient;
-    DBGrid.DataSource := datasrc;
-    // --------
-    DataModMain.ImportNewReadersFromJSON(jsData);
-    datasrc.DataSet := DataModMain.mtabReaders;
-    AutoSizeColumns(DBGrid);
+    for i := 0 to jsData.Count - 1 do
+    begin
+      jsRow := jsData.Items[i] as TJSONObject;
+      email := jsRow.Values['email'].Value;
+      if avaliable(jsRow, 'firstname') then
+        firstName := jsRow.Values['firstname'].Value
+      else
+        firstName := '';
+      if avaliable(jsRow, 'lastname') then
+        lastName := jsRow.Values['lastname'].Value
+      else
+        lastName := '';
+      if avaliable(jsRow, 'company') then
+        company := jsRow.Values['company'].Value
+      else
+        company := '';
+      if avaliable(jsRow, 'book-isbn') then
+        bookISBN := jsRow.Values['book-isbn'].Value
+      else
+        bookISBN := '';
+      if avaliable(jsRow, 'book-title') then
+        bookTitle := jsRow.Values['book-title'].Value
+      else
+        bookTitle := '';
+      if avaliable(jsRow, 'rating') then
+        rating := (jsRow.Values['rating'] as TJSONNumber).AsInt
+      else
+        rating := -1;
+      if avaliable(jsRow, 'oppinion') then
+        oppinion := jsRow.Values['oppinion'].Value
+      else
+        oppinion := '';
+      if avaliable(jsRow, 'created') then
+        created := jsRow.Values['created'].Value
+      else
+        created := '';
+      if created <> '' then
+        dt := System.DateUtils.ISO8601ToDate(created, False)
+      else
+        dt := 0;
+      maxID := DataModMain.GetMaxValueInDataSet(DataModMain.mtabReaders,
+        'ReaderId');
+      DataModMain.mtabReaders.AppendRecord([maxID + 1, firstName, lastName,
+        email, company, 1, dt, now()]);
+      Insert([rating.ToString], ss, maxInt);
+    end;
+    Caption := String.Join(' ,', ss);
   finally
     jsData.Free;
   end;
@@ -249,9 +324,9 @@ end;
 
 procedure TForm1.ResizeGroupBox();
 var
-  sum: integer;
-  avaliable: integer;
-  labelPixelHeight: integer;
+  sum: Integer;
+  avaliable: Integer;
+  labelPixelHeight: Integer;
 begin
   (*
     sum := lbxBooksAvaliable.Height + lbxBooksCooming.Height;
@@ -286,7 +361,7 @@ procedure TForm1.tmrAppReadyTimer(Sender: TObject);
 var
   frm: TFrameWelcome;
   tab: TChromeTab;
-  VersionNr: integer;
+  VersionNr: Integer;
   msg1: string;
   UserName: string;
   password: string;
@@ -297,7 +372,7 @@ var
   AllBooks: TBookCollection;
   OtherBooks: TBookCollection;
   booksCfg: TBooksListBoxConfigurator;
-  DataSrc: TDataSource;
+  datasrc: TDataSource;
   DataGrid: TDBGrid;
 begin
   tmrAppReady.Enabled := False;
@@ -383,13 +458,13 @@ begin
   // ----------------------------------------------------------
   //
   // Create Books Table
-  DataSrc := TDataSource.Create(frm);
+  datasrc := TDataSource.Create(frm);
   DataGrid := TDBGrid.Create(frm);
   DataGrid.AlignWithMargins := True;
   DataGrid.Parent := frm;
   DataGrid.Align := alClient;
   DataGrid.DataSource := datasrc;
-  DataSrc.DataSet := DataModMain.mtabBooks;
+  datasrc.DataSet := DataModMain.mtabBooks;
   AutoSizeColumns(DataGrid);
 end;
 
