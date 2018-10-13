@@ -7,7 +7,8 @@ uses
   Vcl.ComCtrls, // TODO: To be cleaned
   Winapi.Windows,
   System.SysUtils, // TODO: To be cleaned
-  System.JSON, System.Generics.Collections;
+  System.JSON, System.Generics.Collections,
+  DataAccess.Books;
 
 type
   TBook = class
@@ -21,11 +22,12 @@ type
     currency: string;
     imported: TDateTime;
     description: string;
+    constructor Create(Books: IBooksDAO); overload;
   end;
 
   TBookCollection = class(TObjectList<TBook>)
   public
-    procedure LoadDataSet();
+    procedure LoadDataSet(BooksDAO: IBooksDAO);
   end;
 
 type
@@ -51,7 +53,8 @@ type
 implementation
 
 uses ClientAPI.Books, // TODO: remove
-  Data.Main;
+  DataAccess.Books.FireDAC, Data.Main;
+  // TODO: too much coupled (use dependency injection)
 
 const
   Books_API_Token = 'BOOKS-arg58d8jmefcu5-1fceb'; // TODO: remove
@@ -61,13 +64,15 @@ var
   AllBooks: TBookCollection;
   OtherBooks: TBookCollection;
   b: TBook;
+  BooksDAO: IBooksDAO;
 begin
   inherited;
   FBooksOnShelf := TBookCollection.Create();
   FBooksAvaliable := TBookCollection.Create();
   AllBooks := TBookCollection.Create(false);
   OtherBooks := TBookCollection.Create();
-  AllBooks.LoadDataSet;
+  BooksDAO := GetBooks_FireDAC(DataModMain.mtabBooks);
+  AllBooks.LoadDataSet(BooksDAO);
   for b in AllBooks do
   begin
     if b.status = 'on-shelf' then
@@ -226,28 +231,30 @@ end;
 
 { TBookCollection }
 
-procedure TBookCollection.LoadDataSet;
-var
-  b: TBook;
+procedure TBookCollection.LoadDataSet(BooksDAO: IBooksDAO);
 begin
-  DataModMain.mtabBooks.First;
-  while not DataModMain.mtabBooks.Eof do
-  begin
-    b := TBook.Create;
-    b.isbn := DataModMain.mtabBooksISBN.Value;
-    b.title := DataModMain.mtabBooksTitle.Value;
-    b.author := DataModMain.mtabBooksAuthors.Value;
-    b.status := DataModMain.mtabBooksStatus.Value;
-    b.releseDate := DataModMain.mtabBooksReleseDate.Value;
-    b.pages := DataModMain.mtabBooksPages.Value;
-    b.price := DataModMain.mtabBooksPrice.Value;
-    b.currency := DataModMain.mtabBooksCurrency.Value;
-    b.imported := DataModMain.mtabBooksImported.Value;
-    b.description := DataModMain.mtabBooksDescription.Value;
-    self.Add(b);
-    DataModMain.mtabBooks.Next;
-  end;
-  DataModMain.mtabBooks.First;
+  BooksDAO.ForEach(
+    procedure(Books: IBooksDAO)
+    begin
+      self.Add(TBook.Create(Books));
+    end);
+end;
+
+{ TBook }
+
+constructor TBook.Create(Books: IBooksDAO);
+begin
+  inherited Create;
+  self.isbn := Books.fldISBN.Value;
+  self.title := Books.fldTitle.Value;
+  self.author := Books.fldAuthors.Value;
+  self.status := Books.fldStatus.Value;
+  self.releseDate := Books.fldReleseDate.Value;
+  self.pages := Books.fldPages.Value;
+  self.price := Books.fldPrice.Value;
+  self.currency := Books.fldCurrency.Value;
+  self.imported := Books.fldImported.Value;
+  self.description := Books.fldDescription.Value;
 end;
 
 end.
