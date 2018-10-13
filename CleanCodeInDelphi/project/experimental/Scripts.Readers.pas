@@ -6,7 +6,7 @@ uses
   System.Classes;
 
 type
-  TContactsScripts = class
+  TReadersScripts = class
     class function GetFirstNameList: string;
   end;
 
@@ -19,7 +19,7 @@ uses
 const
   TEXT_SPERATOR = ', ';
 
-class function TContactsScripts.GetFirstNameList: string;
+class function TReadersScripts.GetFirstNameList: string;
 var
   Readers: IReadersDAO;
   s: string;
