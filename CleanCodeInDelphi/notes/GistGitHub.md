@@ -1,4 +1,4 @@
-# Clean Code in a nutshell on the GitHubGist by Wojtek Łukaszuk
+# Clean Code in a nutshell 
 
 | | |
 | - | - |
