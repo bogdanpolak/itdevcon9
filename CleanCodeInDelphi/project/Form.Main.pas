@@ -1,6 +1,4 @@
 unit Form.Main;
-{ TODO 1: Todo message here }
-{ TODO 2: Todo message here }
 interface
 
 uses
@@ -8,7 +6,9 @@ uses
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Grids, Vcl.DBGrids, Data.DB,
   ChromeTabs, ChromeTabsClasses, ChromeTabsTypes,
-  Fake.FDConnection, ExtGUI.ListBox.Books;
+  Fake.FDConnection, 
+  { TODO 0: SprawdÅº dlaczego jest konieczne usues w interface }
+  ExtGUI.ListBox.Books;
 
 type
   TForm1 = class(TForm)
@@ -33,9 +33,14 @@ type
     procedure Splitter1Moved(Sender: TObject);
     procedure tmrAppReadyTimer(Sender: TObject);
   private
-    isDeveloperMode: Boolean;
+    FBooksConfig :TBooksListBoxConfigurator;Å›
+    { TODO 1: Meanigfull name needed. If we are in developer mode }
+    FDevM: Boolean;
+    { TODO 0: Naming convention violation. Not used ....}
     isDatabaseOK: Boolean;
+    { TODO 0: Variable is not used }
     DragedIdx: Integer;
+    { TODO 1: Use more minigfull name: AutoSizeBooksGroupBoxes }
     procedure ResizeGroupBox();
   public
     FDConnection1: TFDConnectionMock;
@@ -54,23 +59,22 @@ uses
   Units.Main, Data.Main, ClientAPI.Readers, ClientAPI.Books;
 
 const
-  SQL_SELECT_DatabaseVersion = 'SELECT versionnr FROM DBInfo';
   SecureKey = 'delphi-is-the-best';
   // SecurePassword = AES 128 ('masterkey',SecureKey)
   SecurePassword = 'hC52IiCv4zYQY2PKLlSvBaOXc14X41Mc1rcVS6kyr3M=';
   Client_API_Token = '20be805d-9cea27e2-a588efc5-1fceb84d-9fb4b67c';
 
 resourcestring
-  SWelcomeScreen = 'Ekran powitalny';
-  SDBServerGone = 'Nie mo¿na nawiazaæ po³¹czenia z serwerem bazy danych.';
-  SDBConnectionUserPwdInvalid = 'B³êdna konfiguracja po³¹czenia z baz¹ danych.'
-    + ' Dane u¿ytkownika aplikacyjnego s¹ nie poprawne.';
-  SDBConnectionError = 'Nie mo¿na nawiazaæ po³¹czenia z baz¹ danych';
-  SDBRequireCreate = 'Baza danych jest pusta.' +
-    ' Proszê najpierw uruchomiæ skrypt buduj¹cy strukturê.';
-  SDBErrorSelect = 'Nie mo¿na wykonaæ polecenia SELECT w bazie danych.';
-  StrNotSupportedDBVersion = 'B³êdna wersja bazy danych. Proszê' +
-    ' zaktualizowaæ strukturê bazy.';
+  SWelcomeScreen = 'Welcome screen';
+  SDBServerGone = 'Database server is gone';
+  SDBConnectionUserPwdInvalid = 'Invalid database configuration.'
+    + ' Application database user or password is incorrect.';
+  SDBConnectionError = 'Can''t connect to database server. Unknown error.';
+  SDBRequireCreate = 'Database is empty. You need to execute script' +
+    ' creating required data.';
+  SDBErrorSelect = 'Can''t execute SELECT command on the database';
+  StrNotSupportedDBVersion = 'Not supported database version. Please' +
+    ' update database structures.';
 
 function DBVersionToString(VerDB: Integer): string;
 begin
@@ -82,6 +86,7 @@ begin
   ResizeGroupBox();
 end;
 
+{ TODO 2: Move to TWinControl class helper}
 function SumHeightForChildrens(Parent: TWinControl;
   ControlsToExclude: TArray<TControl>): Integer;
 var
@@ -112,8 +117,8 @@ begin
   Result := sumHeight;
 end;
 
+{ TODO 2: Move to TDBGrid class helper}
 function AutoSizeColumns(DBGrid: TDBGrid; const MaxRows: Integer = 25): Integer;
-
 var
   DataSet: TDataSet;
   Bookmark: TBookmark;
@@ -163,14 +168,35 @@ begin
   Result := Count - DBGrid.ClientWidth;
 end;
 
-{ TODO: Change function name [jsonObjectHasValue] }
-function avaliable(jsObject: TJSONObject; const fieldName: string)
+{ TODO 0: More minigful name. Function should be local or in the helper }
+// ----------------------------------------------------------
+//
+// Function checks is TJsonObject has field with value
+//
+function fieldAvaliable(jsObject: TJSONObject; const fieldName: string)
   : Boolean; inline;
 begin
   Result := Assigned(jsObject.Values[fieldName]) and not jsObject.Values
     [fieldName].Null;
 end;
 
+function IsValidIsoDateUtc (jsObj: TJSONObject; const field: string): boolean
+begin
+  try
+    dt := System.DateUtils.ISO8601ToDate(jsObj.Values[field], False)
+    isValidIsoDate := true;
+  except
+    on E: ENotValidISODate do isValidIsoDate := false;
+  end
+end;
+
+function GetIsoDateUtc (jsObj: TJSONObject; const field: string): TDateTime;
+begin
+  dt := System.DateUtils.ISO8601ToDate(jsObj.Values[field], False)
+end;
+
+
+{ TODO 2: Method is too large. Comments is showing separate methods}
 procedure TForm1.btnImportClick(Sender: TObject);
 var
   frm: TFrameImport;
@@ -194,13 +220,17 @@ var
   dt: TDateTime;
   maxID: Integer;
 begin
+  { TODO 0: ZmieÅ„ TFrameImport na TFrameReaders}
+  { TODO 0: Dodaj import ksiÄ…Å¼ek }
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
+  // Create new frame, show it add to ChromeTabs
   // 1. Create TFrameImport.
   // 2. Embed frame in pnMain (show)
   // 3. Add new ChromeTab
   //
+  { TODO 2: Extract method }
   frm := TFrameImport.Create(pnMain);
   frm.Parent := pnMain;
   frm.Visible := True;
@@ -211,8 +241,10 @@ begin
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
-  // Add TDBGrid to TFrameImport
+  // Dynamically Add TDBGrid to TFrameImport
   //
+  { TODO 2: Move functionality into TFrameReaders }
+  // warning for dataset dependencies, discuss TDBGrid dependencies
   datasrc := TDataSource.Create(frm);
   DBGrid := TDBGrid.Create(frm);
   DBGrid.AlignWithMargins := True;
@@ -226,60 +258,94 @@ begin
   //
   // Import new reders data from OpenAPI
   //
+  { TODO 0: dodaj kod dla: bookISBN, bookTitle, rating, oppinion }
+  // wyszukaj w ksiÄ…Å¼kach isbn
   jsData := ImportReadersFromWebService(Client_API_Token);
+  { TODO 2: try-catch is separate responsibility }
   try
     for i := 0 to jsData.Count - 1 do
     begin
+      { TODO 0: Dodaj prostÄ… walidacjÄ™, pola wymagane oraz poprawny email }
+      { TODO 2: Violates DRY rule }
+      { TODO 2: TJSONObject helper Values return Variant.Null }
+      // ----------------------------------------------------------------
+      //
+      // Read JSON object
+      //
       jsRow := jsData.Items[i] as TJSONObject;
       email := jsRow.Values['email'].Value;
-      if avaliable(jsRow, 'firstname') then
+      if fieldAvaliable(jsRow, 'firstname') then
         firstName := jsRow.Values['firstname'].Value
       else
         firstName := '';
-      if avaliable(jsRow, 'lastname') then
+      if fieldAvaliable(jsRow, 'lastname') then
         lastName := jsRow.Values['lastname'].Value
       else
         lastName := '';
-      if avaliable(jsRow, 'company') then
+      if fieldAvaliable(jsRow, 'company') then
         company := jsRow.Values['company'].Value
       else
         company := '';
-      if avaliable(jsRow, 'book-isbn') then
+      if fieldAvaliable(jsRow, 'book-isbn') then
         bookISBN := jsRow.Values['book-isbn'].Value
       else
         bookISBN := '';
-      if avaliable(jsRow, 'book-title') then
+      if fieldAvaliable(jsRow, 'book-title') then
         bookTitle := jsRow.Values['book-title'].Value
       else
         bookTitle := '';
-      if avaliable(jsRow, 'rating') then
+      if fieldAvaliable(jsRow, 'rating') then
         rating := (jsRow.Values['rating'] as TJSONNumber).AsInt
       else
         rating := -1;
-      if avaliable(jsRow, 'oppinion') then
+      if fieldAvaliable(jsRow, 'oppinion') then
         oppinion := jsRow.Values['oppinion'].Value
       else
         oppinion := '';
-      if avaliable(jsRow, 'created') then
+      if fieldAvaliable(jsRow, 'created') then
         created := jsRow.Values['created'].Value
       else
         created := '';
-      if created <> '' then
-        dt := System.DateUtils.ISO8601ToDate(created, False)
-      else
-        dt := 0;
+      // ----------------------------------------------------------------
+      //
+      // Read JSON object
+      //
+
+      // ----------------------------------------------------------------
+      //
+      // Read JSON object
+      //
+      var readerId: Variant;
+      readerId := DataModMain.FindReaderByEmil (email);
+      if readerId is Null then
+      // ----------------------------------------------------------------
+      //
+      // Locate book by ISBN
+      //
+      var b: TBook;
+      b := FBooksConfig.GetAllBooks.FindByISBN (isbn);
+      if not Assigned then
+        ZwrÃ³Ä‡KodBÅ‚Ä™du & exit;
+      // ----------------------------------------------------------------
+      //
+      // Append a new reader into the database
+      //
       maxID := DataModMain.GetMaxValueInDataSet(DataModMain.mtabReaders,
         'ReaderId');
       DataModMain.mtabReaders.AppendRecord([maxID + 1, firstName, lastName,
         email, company, 1, dt, now()]);
-      Insert([rating.ToString], ss, maxInt);
+      // ----------------------------------------------------------------
+      if FDevM then
+        Insert([rating.ToString], ss, maxInt);
     end;
-    Caption := String.Join(' ,', ss);
+    if FDevM then
+      Caption := String.Join(' ,', ss);
   finally
     jsData.Free;
   end;
 end;
 
+{ ********** BP BP ********** }
 procedure TForm1.ChromeTabs1ButtonCloseTabClick(Sender: TObject;
   ATab: TChromeTab; var Close: Boolean);
 var
@@ -311,14 +377,20 @@ var
   ExeName: string;
   ProjectFileName: string;
 begin
+  // ----------------------------------------------------------
+  // Check: If we are in developer mode
+  //
+  // Developer mode id used to change application configuration
+  // during test 
+  { TODO: Meanigful name for FDevM }
 {$IFDEF DEBUG}
   Extention := '.dpr';
   ExeName := ExtractFileName(Application.ExeName);
   ProjectFileName := ChangeFileExt(ExeName, Extention);
-  isDeveloperMode := FileExists(ProjectFileName) or
+  FDevM := FileExists(ProjectFileName) or
     FileExists('..\..\' + ProjectFileName);
 {$ELSE}
-  isDeveloperMode := False;
+  FDevM := False;
 {$ENDIF}
   pnMain.Caption := '';
 end;
@@ -377,7 +449,7 @@ var
   DataGrid: TDBGrid;
 begin
   tmrAppReady.Enabled := False;
-  if isDeveloperMode then
+  if FDevM then
     ReportMemoryLeaksOnShutdown := True;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
@@ -420,7 +492,9 @@ begin
     end;
   end;
   try
-    res := FDConnection1.ExecSQLScalar(SQL_SELECT_DatabaseVersion);
+    { TODO 1: SQL commands inlined - extract as constants }
+    // SQL_SELELECT: DatabaseVersion
+    res := FDConnection1.ExecSQLScalar('SELECT versionnr FROM DBInfo');
   except
     on E: EFDDBEngineException do
     begin
@@ -453,8 +527,8 @@ begin
   // * Setup drag&drop functionality for two list boxes
   // * Setup OwnerDraw mode
   //
-  TBooksListBoxConfigurator.Create(self).PrepareListBoxes(lbxBooksReaded,
-    lbxBooksAvaliable2);
+  FBooksConfig := TBooksListBoxConfigurator.Create(self);
+  FBooksConfig.PrepareListBoxes(lbxBooksReaded, lbxBooksAvaliable2);
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //

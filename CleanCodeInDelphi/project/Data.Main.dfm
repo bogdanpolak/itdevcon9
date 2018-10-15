@@ -54,6 +54,22 @@ object DataModMain: TDataModMain
     UpdateOptions.AutoCommitUpdates = True
     Left = 136
     Top = 24
+    object mtabReportsReaderId: TIntegerField
+      FieldName = 'ReaderId'
+    end
+    object mtabReportsISBN: TWideStringField
+      FieldName = 'ISBN'
+    end
+    object mtabReportsRating: TIntegerField
+      FieldName = 'Rating'
+    end
+    object mtabReportsOppinion: TWideStringField
+      FieldName = 'Oppinion'
+      Size = 2000
+    end
+    object mtabReadersCreated: TDateField
+      FieldName = 'Created'
+    end
   end
   object mtabBooks: TFDMemTable
     FieldDefs = <>

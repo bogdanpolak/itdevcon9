@@ -25,6 +25,11 @@ type
     // ------------------------------------------------------
     // Reports Table:
     mtabReports: TFDMemTable;
+    mtabReportsReaderId: TIntegerField;
+    mtabReportsISBN: TWideStringField;
+    mtabReportsRating: TIntegerField;
+    mtabReportsOppinion: TWideStringField;
+    mtabReadersCreated: TDateField;
     // ------------------------------------------------------
     // Books Table:
     mtabBooks: TFDMemTable;
@@ -43,6 +48,7 @@ type
   private
   public
     procedure OpenDataSets;
+    { TODO 2: Extract into TDataSet helper. This pollutes DM public API }
     function GetMaxValueInDataSet(DataSet: TDataSet;
       const fieldName: string): integer;
   end;
@@ -59,6 +65,8 @@ uses
 {$R *.dfm}
 { TDataModMain }
 
+{ TODO 2: Commented out function. Just delete it }
+{
 function BooksToDateTime(const s: string): TDateTime;
 const
   months: array [1 .. 12] of string = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -81,6 +89,7 @@ begin
   yy := y.ToInteger();
   Result := EncodeDate(yy, mm, 1);
 end;
+}
 
 function TDataModMain.GetMaxValueInDataSet(DataSet: TDataSet;
   const fieldName: string): integer;
