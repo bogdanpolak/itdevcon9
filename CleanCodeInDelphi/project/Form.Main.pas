@@ -47,9 +47,9 @@ type
     isDatabaseOK: Boolean;
     { TODO 1: Variable is not used }
     DragedIdx: Integer;
-    { TODO 1: Use more meaningful name: AutoSizeBooksGroupBoxes }
+    { TODO 1: Meaningful name: AutoSizeBooksGroupBoxes }
     procedure ResizeGroupBox();
-    { TODO 1: Use more meaningful. Check comments in the implementation }
+    { TODO 1: Meaningful name. Check comments in the implementation }
     procedure ValidateBook(jsRow: TJSONObject; email: string;
       dtReported: TDateTime; var readerId: Variant);
   public
@@ -489,7 +489,7 @@ begin
   //
   // Developer mode id used to change application configuration
   // during test
-  { TODO 1: Meanigful name for FDevMod }
+  { TODO 1: Meaningful name for FDevMod }
 {$IFDEF DEBUG}
   Extention := '.dpr';
   ExeName := ExtractFileName(Application.ExeName);
