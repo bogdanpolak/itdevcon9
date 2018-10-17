@@ -58,7 +58,7 @@ Clean code:
     * Commit you work often
     * Use meaningful commit messages to explain changes 
 
-4. Define code **Code Style Convention** (code format)
+4. Define **Code Style Convention** (code format)
     * Use code formatter often
     * Define common company formatter settings and make it easy accessible for each team member
     * Or maybe the best choice is to use default Embarcadero's settings
