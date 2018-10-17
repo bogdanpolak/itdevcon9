@@ -29,7 +29,7 @@ type
     mtabReportsISBN: TWideStringField;
     mtabReportsRating: TIntegerField;
     mtabReportsOppinion: TWideStringField;
-    mtabReadersCreated: TDateField;
+    mtabReportsReported: TDateField;
     // ------------------------------------------------------
     // Books Table:
     mtabBooks: TFDMemTable;
@@ -48,7 +48,8 @@ type
   private
   public
     procedure OpenDataSets;
-    { TODO 2: Extract into TDataSet helper. This pollutes DM public API }
+    function FindReaderByEmil (const email: string): Variant;
+    { TODO 2: [Helper] Extract into TDataSet helper. This pollutes the Data Module public API }
     function GetMaxValueInDataSet(DataSet: TDataSet;
       const fieldName: string): integer;
   end;
@@ -59,13 +60,13 @@ var
 implementation
 
 {%CLASSGROUP 'Vcl.Controls.TControl'}
+{$R *.dfm}
 
 uses
-  ClientAPI.Books;
-{$R *.dfm}
-{ TDataModMain }
+  System.Variants, ClientAPI.Books;
 
-{ TODO 2: Commented out function. Just delete it }
+
+{ TODO 1: Commented out function. Just delete it }
 {
 function BooksToDateTime(const s: string): TDateTime;
 const
@@ -91,12 +92,25 @@ begin
 end;
 }
 
+function TDataModMain.FindReaderByEmil(const email: string): Variant;
+var
+  ok: Boolean;
+begin
+  ok := mtabReaders.Locate('email',email,[]);
+  if ok then
+    Result := mtabReadersReaderId.Value
+  else
+    Result := System.Variants.Null()
+end;
+
 function TDataModMain.GetMaxValueInDataSet(DataSet: TDataSet;
   const fieldName: string): integer;
 var
   v: Integer;
 begin
-  Result := -1;
+  { TODO 2: [Helper] Extract into TDBGrid.ForEachRow class helper }
+  Result := 0;
+  DataSet.DisableControls;
   DataSet.First;
   while not DataSet.Eof do
   begin
@@ -105,6 +119,7 @@ begin
       Result := v;
     DataSet.Next;
   end;
+  DataSet.EnableControls;
 end;
 
 procedure TDataModMain.OpenDataSets;
@@ -143,7 +158,11 @@ begin
   else
     raise Exception.Create('Error Message');
   mtabBooks.LoadFromFile(fname, sfJSON);
-
+  // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  //
+  // Repoerts table
+  mtabReports.CreateDataSet;
 end;
 
 end.

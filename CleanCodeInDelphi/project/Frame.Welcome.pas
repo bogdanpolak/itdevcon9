@@ -49,7 +49,6 @@ end;
 constructor TFrameWelcome.Create(AOwner: TComponent);
 begin
   inherited;
-  // TODO -cMM: TFrameWelcome.Create default body inserted
   MessageManager := TMessages.Create;
   MessageManager.RegisterListener(self);
 end;
@@ -57,7 +56,6 @@ end;
 destructor TFrameWelcome.Destroy;
 begin
   inherited;
-  // TODO -cMM: TFrameWelcome.Destroy default body inserted
   MessageManager.Free;
 end;
 
@@ -79,7 +77,7 @@ begin
       lbl.Caption := '* ' + FrameMsg.Text
     else
       lbl.Caption := FrameMsg.Text;
-    { TODO: Show messages with TagBoolean = false only in DeveloperMode }
+    { TODO 3: Show messages with TagBoolean = false only in DeveloperMode }
     if FrameMsg.TagBoolean = false then
     begin
       lbl.Font.Style := [fsItalic];

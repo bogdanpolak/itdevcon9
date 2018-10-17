@@ -1,16 +1,16 @@
-unit ExtGUI.ListBox.Books;
+﻿unit ExtGUI.ListBox.Books;
 
 interface
 
 uses
   System.Classes, Vcl.StdCtrls, Vcl.Controls, System.Types, Vcl.Graphics,
-  Vcl.ComCtrls, // TODO: To be cleaned
+  Vcl.ComCtrls, { TODO 1 : [0]  Remove unit Vcl.ComCtrls }
   Winapi.Windows,
-  System.SysUtils, // TODO: To be cleaned
+  System.SysUtils,  { TODO 1 : [0]  Remove unit System.SysUtils }
   System.JSON, System.Generics.Collections,
   DataAccess.Books;
 
-{ TODO 3: Move class into the separate unit: Model.Book.pas }
+{ TODO 3: [C] Move class into the separate unit: Model.Book.pas }
 // with or without Book Collection?
 type
   TBook = class
@@ -56,17 +56,19 @@ type
     destructor Destroy; override;
     procedure PrepareListBoxes(lbxOnShelf, lbxAvaliable: TListBox);
     function GetBookList (kind: TBookListKind): TBookCollection; 
-    function FindBook (isbn: string): TBook; 
-  end; 
+    function FindBook (isbn: string): TBook;
+    procedure InsertNewBook (b:TBook);
+  end;
 
 implementation
 
-uses ClientAPI.Books, // TODO: remove
+uses
+  ClientAPI.Books, { TODO 1 : [0]  Remove unit ClientAPI.Books }
   DataAccess.Books.FireDAC, Data.Main;
-  // TODO: too much coupled (use dependency injection)
 
 const
-  Books_API_Token = 'BOOKS-arg58d8jmefcu5-1fceb'; // TODO: remove
+  { TODO 1 : [0] Remove const Books_API_Token }
+  Books_API_Token = 'BOOKS-arg58d8jmefcu5-1fceb';
 
 constructor TBooksListBoxConfigurator.Create(AOwner: TComponent);
 var
@@ -103,10 +105,21 @@ function TBooksListBoxConfigurator.GetBookList (kind: TBookListKind):
   TBookCollection;
 begin
   case kind of
-    blAll: Result := FBooks;
-    blOnShelf: Result := FBooks;
-    blAvaliable: Result := FBooks;
+    blAll: Result := FAllBooks;
+    blOnShelf: Result := FBooksOnShelf;
+    blAvaliable: Result := FBooksAvaliable;
   end;
+end;
+
+procedure TBooksListBoxConfigurator.InsertNewBook(b: TBook);
+begin
+  FAllBooks.Add(b);
+  { TODO 2: [A] Code duplication, look on the TBooksListBoxConfigurator.Create }
+  if b.status = 'on-shelf' then
+    FBooksOnShelf.Add(b)
+  else if b.status = 'avaliable' then
+    FBooksAvaliable.Add(b);
+  FListBoxAvaliable.AddItem(b.title,b);
 end;
 
 function TBooksListBoxConfigurator.FindBook (isbn: string): TBook;
@@ -261,16 +274,20 @@ begin
 end;
 
 function TBookCollection.FindByISBN (const ISBN: string): TBook;
+var
+  i: Integer;
 begin
-  { TODO 0: (sprawdź nazwisko) Dykstra structural programming [exit] }
+  { TODO 1: Dijkstra structural programming rule violation }
   { TODO 1: More readable code for b in Items do. Shorter method }
+  // Dijkstra: one entrance and one exit
   for i := 0 to Self.Count-1 do
     if Self.Items[i].isbn = ISBN then
     begin
       Result := Self.Items[i];
       exit;
     end;
-end
+  Result := nil;
+end;
 
 { TBook }
 

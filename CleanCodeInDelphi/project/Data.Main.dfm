@@ -67,8 +67,8 @@ object DataModMain: TDataModMain
       FieldName = 'Oppinion'
       Size = 2000
     end
-    object mtabReadersCreated: TDateField
-      FieldName = 'Created'
+    object mtabReportsReported: TDateField
+      FieldName = 'Reported'
     end
   end
   object mtabBooks: TFDMemTable

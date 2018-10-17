@@ -1,0 +1,29 @@
+---------------------------------------------------------------
+unit Model.ReaderReporter;
+
+type
+  TReaderReport = record
+    Email :String;
+    FirstName :String;
+    LastName :String;
+    Company :String;
+    BookISBN :String;
+    BookTitle :String;
+    Rating :Integer;
+    Oppinion :string;
+    ReportedAsString :string;
+    ReportedAsDateTime :string;
+    procedure LoadFromJSONObject (jsObj: TJSONObject);
+    procedure Validate;
+  end;
+---------------------------------------------------------------
+
+unit Script.ReaderReporter;
+
+type
+  TScriptReaderReport = class
+    ValidateBook
+    Locate book by ISBN
+    Append a new reader into the database if requred
+    Append report into the database
+  end;

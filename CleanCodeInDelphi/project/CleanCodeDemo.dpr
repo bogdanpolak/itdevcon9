@@ -8,7 +8,7 @@ uses
   Consts.Application in 'Consts.Application.pas',
   Utils.CipherAES128 in 'Utils.CipherAES128.pas',
   Frame.Import in 'Frame.Import.pas' {FrameImport: TFrame},
-  Units.Main in 'Units.Main.pas',
+  Utils.General in 'Utils.General.pas',
   Data.Main in 'Data.Main.pas' {DataModMain: TDataModule},
   Utils.Messages in 'Utils.Messages.pas',
   Vcl.Themes,

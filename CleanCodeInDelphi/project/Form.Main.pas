@@ -1,4 +1,5 @@
-unit Form.Main;
+﻿unit Form.Main;
+
 interface
 
 uses
@@ -6,8 +7,14 @@ uses
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Grids, Vcl.DBGrids, Data.DB,
   ChromeTabs, ChromeTabsClasses, ChromeTabsTypes,
-  Fake.FDConnection, 
-  { TODO 0: Sprawdź dlaczego jest konieczne usues w interface }
+  Fake.FDConnection,
+  {TODO 1: [0] Move System.JSON into implementation.}
+  // System.JSON is required because of method ValidateBook
+  // Change it into a public procedure and mark with TODO
+  // TODO 3 (colon) Move this procedure into class (idea)
+  System.JSON,
+  {TODO 3: [D] Resolve dependency on ExtGUI.ListBox.Books. Too tightly coupled}
+  // Dependency is requred by attribute TBooksListBoxConfigurator
   ExtGUI.ListBox.Books;
 
 type
@@ -33,15 +40,18 @@ type
     procedure Splitter1Moved(Sender: TObject);
     procedure tmrAppReadyTimer(Sender: TObject);
   private
-    FBooksConfig :TBooksListBoxConfigurator;ś
+    FBooksConfig: TBooksListBoxConfigurator;
     { TODO 1: Meanigfull name needed. If we are in developer mode }
-    FDevM: Boolean;
-    { TODO 0: Naming convention violation. Not used ....}
+    FDevMod: Boolean;
+    { TODO 1: Naming convention violation. It's not used .... check it }
     isDatabaseOK: Boolean;
-    { TODO 0: Variable is not used }
+    { TODO 1: Variable is not used }
     DragedIdx: Integer;
-    { TODO 1: Use more minigfull name: AutoSizeBooksGroupBoxes }
+    { TODO 1: Use more meaningful name: AutoSizeBooksGroupBoxes }
     procedure ResizeGroupBox();
+    { TODO 1: Use more meaningful. Check comments in the implementation }
+    procedure ValidateBook(jsRow: TJSONObject; email: string;
+      dtReported: TDateTime; var readerId: Variant);
   public
     FDConnection1: TFDConnectionMock;
   end;
@@ -54,9 +64,10 @@ implementation
 {$R *.dfm}
 
 uses
-  System.StrUtils, System.JSON, System.Math, System.DateUtils,
+  System.StrUtils, System.Math, System.DateUtils,
+  System.RegularExpressions,
   Frame.Welcome, Consts.Application, Utils.CipherAES128, Frame.Import,
-  Units.Main, Data.Main, ClientAPI.Readers, ClientAPI.Books;
+  Utils.General, Data.Main, ClientAPI.Readers, ClientAPI.Books;
 
 const
   SecureKey = 'delphi-is-the-best';
@@ -67,8 +78,8 @@ const
 resourcestring
   SWelcomeScreen = 'Welcome screen';
   SDBServerGone = 'Database server is gone';
-  SDBConnectionUserPwdInvalid = 'Invalid database configuration.'
-    + ' Application database user or password is incorrect.';
+  SDBConnectionUserPwdInvalid = 'Invalid database configuration.' +
+    ' Application database user or password is incorrect.';
   SDBConnectionError = 'Can''t connect to database server. Unknown error.';
   SDBRequireCreate = 'Database is empty. You need to execute script' +
     ' creating required data.';
@@ -86,7 +97,7 @@ begin
   ResizeGroupBox();
 end;
 
-{ TODO 2: Move to TWinControl class helper}
+{ TODO 2: [Helper] TWinControl class helper }
 function SumHeightForChildrens(Parent: TWinControl;
   ControlsToExclude: TArray<TControl>): Integer;
 var
@@ -117,7 +128,7 @@ begin
   Result := sumHeight;
 end;
 
-{ TODO 2: Move to TDBGrid class helper}
+{ TODO 2: [Helper] Extract into TDBGrid.ForEachRow class helper }
 function AutoSizeColumns(DBGrid: TDBGrid; const MaxRows: Integer = 25): Integer;
 var
   DataSet: TDataSet;
@@ -168,11 +179,11 @@ begin
   Result := Count - DBGrid.ClientWidth;
 end;
 
-{ TODO 0: More minigful name. Function should be local or in the helper }
 // ----------------------------------------------------------
 //
-// Function checks is TJsonObject has field with value
+// Function checks is TJsonObject has field and this field has not null value
 //
+{ TODO 2: [Helper] TJSONObject Class helpper and more minigful name expected }
 function fieldAvaliable(jsObject: TJSONObject; const fieldName: string)
   : Boolean; inline;
 begin
@@ -180,30 +191,69 @@ begin
     [fieldName].Null;
 end;
 
-function IsValidIsoDateUtc (jsObj: TJSONObject; const field: string): boolean
+{ TODO 2: [Helper] TJSONObject Class helpper and this method has two responsibilities }
+// Warning! In-out var parameter
+// extract separate:  GetIsoDateUtc
+function IsValidIsoDateUtc(jsObj: TJSONObject; const Field: string;
+  var dt: TDateTime): Boolean;
 begin
+  dt := 0;
   try
-    dt := System.DateUtils.ISO8601ToDate(jsObj.Values[field], False)
-    isValidIsoDate := true;
+    dt := System.DateUtils.ISO8601ToDate(jsObj.Values[Field].Value, False);
+    Result := True;
   except
-    on E: ENotValidISODate do isValidIsoDate := false;
+    on E: Exception do
+      Result := False;
   end
 end;
 
-function GetIsoDateUtc (jsObj: TJSONObject; const field: string): TDateTime;
+{ TODO 2: Move into Utils.General }
+function CheckEmail(const s: string): Boolean;
+const
+  EMAIL_REGEX = '^((?>[a-zA-Z\d!#$%&''*+\-/=?^_`{|}~]+\x20*|"((?=[\x01-\x7f])' +
+    '[^"\\]|\\[\x01-\x7f])*"\x20*)*(?<angle><))?((?!\.)' +
+    '(?>\.?[a-zA-Z\d!#$%&''*+\-/=?^_`{|}~]+)+|"((?=[\x01-\x7f])' +
+    '[^"\\]|\\[\x01-\x7f])*")@(((?!-)[a-zA-Z\d\-]+(?<!-)\.)+[a-zA-Z]' +
+    '{2,}|\[(((?(?<!\[)\.)(25[0-5]|2[0-4]\d|[01]?\d?\d))' +
+    '{4}|[a-zA-Z\d\-]*[a-zA-Z\d]:((?=[\x01-\x7f])[^\\\[\]]|\\' +
+    '[\x01-\x7f])+)\])(?(angle)>)$';
 begin
-  dt := System.DateUtils.ISO8601ToDate(jsObj.Values[field], False)
+  Result := System.RegularExpressions.TRegEx.IsMatch(s, EMAIL_REGEX);
 end;
 
+function BooksToDateTime(const s: string): TDateTime;
+const
+  months: array [1 .. 12] of string = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
+var
+  m: string;
+  y: string;
+  i: Integer;
+  mm: Integer;
+  yy: Integer;
+begin
+  m := s.Substring(0, 3);
+  y := s.Substring(4);
+  mm := 0;
+  for i := 1 to 12 do
+    if months[i].ToUpper = m.ToUpper then
+      mm := i;
+  if mm = 0 then
+    raise ERangeError.Create('Incorect mont name in the date: ' + s);
+  yy := y.ToInteger();
+  Result := EncodeDate(yy, mm, 1);
+end;
 
-{ TODO 2: Method is too large. Comments is showing separate methods}
+{ TODO 2: [A] Method is too large. Comments is showing separate methods }
 procedure TForm1.btnImportClick(Sender: TObject);
 var
   frm: TFrameImport;
   tab: TChromeTab;
   jsData: TJSONArray;
-  DBGrid: TDBGrid;
-  datasrc: TDataSource;
+  DBGrid1: TDBGrid;
+  DataSrc1: TDataSource;
+  DBGrid2: TDBGrid;
+  DataSrc2: TDataSource;
   i: Integer;
   jsRow: TJSONObject;
   email: string;
@@ -214,14 +264,54 @@ var
   bookTitle: string;
   rating: Integer;
   oppinion: string;
-  created: string;
   ss: array of string;
   v: string;
-  dt: TDateTime;
-  maxID: Integer;
+  dtReported: TDateTime;
+  readerId: Variant;
+  b: TBook;
+  jsBooks: TJSONArray;
+  jsBook: TJSONObject;
+  TextBookReleseDate: string;
+  b2: TBook;
 begin
-  { TODO 0: Zmień TFrameImport na TFrameReaders}
-  { TODO 0: Dodaj import książek }
+  // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  //
+  // Import new Books data from OpenAPI
+  //
+  jsBooks := ImportBooksFromWebService(Client_API_Token);
+  try
+    for i := 0 to jsBooks.Count - 1 do
+    begin
+      jsBook := jsBooks.Items[i] as TJSONObject;
+      b := TBook.Create;
+      b.status := jsBook.Values['status'].Value;
+      b.title := jsBook.Values['title'].Value;
+      b.isbn := jsBook.Values['isbn'].Value;
+      b.author := jsBook.Values['author'].Value;
+      TextBookReleseDate := jsBook.Values['date'].Value;
+      b.releseDate := BooksToDateTime(TextBookReleseDate);
+      b.pages := (jsBook.Values['pages'] as TJSONNumber).AsInt;
+      b.price := StrToCurr(jsBook.Values['price'].Value);
+      b.currency := jsBook.Values['currency'].Value;
+      b.description := jsBook.Values['description'].Value;
+      b.imported := Now();
+      b2 := FBooksConfig.GetBookList(blAll).FindByISBN(b.isbn);
+      if not Assigned(b2) then
+      begin
+        FBooksConfig.InsertNewBook(b);
+        // ----------------------------------------------------------------
+        // Append report into the database:
+        // Fields: ISBN, Title, Authors, Status, ReleseDate, Pages, Price,
+        // Currency, Imported, Description
+        DataModMain.mtabBooks.InsertRecord([b.isbn, b.title, b.author,
+          b.status, b.releseDate, b.pages, b.price, b.currency, b.imported,
+          b.description]);
+      end;
+    end;
+  finally
+    jsBooks.Free;
+  end;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
@@ -230,7 +320,8 @@ begin
   // 2. Embed frame in pnMain (show)
   // 3. Add new ChromeTab
   //
-  { TODO 2: Extract method }
+  { TODO 2: [B] Extract method. Read comments and use meaningful }
+  // Look for ChromeTabs1.Tabs.Add for code duplication
   frm := TFrameImport.Create(pnMain);
   frm.Parent := pnMain;
   frm.Visible := True;
@@ -243,35 +334,33 @@ begin
   //
   // Dynamically Add TDBGrid to TFrameImport
   //
-  { TODO 2: Move functionality into TFrameReaders }
+  { TODO 2: Move functionality into TFrameImport }
   // warning for dataset dependencies, discuss TDBGrid dependencies
-  datasrc := TDataSource.Create(frm);
-  DBGrid := TDBGrid.Create(frm);
-  DBGrid.AlignWithMargins := True;
-  DBGrid.Parent := frm;
-  DBGrid.Align := alClient;
-  DBGrid.DataSource := datasrc;
-  datasrc.DataSet := DataModMain.mtabReaders;
-  AutoSizeColumns(DBGrid);
+  DataSrc1 := TDataSource.Create(frm);
+  DBGrid1 := TDBGrid.Create(frm);
+  DBGrid1.AlignWithMargins := True;
+  DBGrid1.Parent := frm;
+  DBGrid1.Align := alClient;
+  DBGrid1.DataSource := DataSrc1;
+  DataSrc1.DataSet := DataModMain.mtabReaders;
+  AutoSizeColumns(DBGrid1);
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
-  // Import new reders data from OpenAPI
+  // Import new Reder Reports data from OpenAPI
   //
-  { TODO 0: dodaj kod dla: bookISBN, bookTitle, rating, oppinion }
-  // wyszukaj w książkach isbn
   jsData := ImportReadersFromWebService(Client_API_Token);
   { TODO 2: try-catch is separate responsibility }
   try
     for i := 0 to jsData.Count - 1 do
     begin
-      { TODO 0: Dodaj prostą walidację, pola wymagane oraz poprawny email }
-      { TODO 2: Violates DRY rule }
-      { TODO 2: TJSONObject helper Values return Variant.Null }
+      { TODO 2: Violation oh the DRY rule }
+      // Use TJSONObject helper Values return Variant.Null
       // ----------------------------------------------------------------
       //
       // Read JSON object
       //
+      { TODO 3: [A] Move this code into record TReaderReport.LoadFromJSON }
       jsRow := jsData.Items[i] as TJSONObject;
       email := jsRow.Values['email'].Value;
       if fieldAvaliable(jsRow, 'firstname') then
@@ -302,43 +391,61 @@ begin
         oppinion := jsRow.Values['oppinion'].Value
       else
         oppinion := '';
-      if fieldAvaliable(jsRow, 'created') then
-        created := jsRow.Values['created'].Value
-      else
-        created := '';
       // ----------------------------------------------------------------
       //
-      // Read JSON object
+      // Validate imported Reader report
       //
-
-      // ----------------------------------------------------------------
-      //
-      // Read JSON object
-      //
-      var readerId: Variant;
-      readerId := DataModMain.FindReaderByEmil (email);
-      if readerId is Null then
+      ValidateBook(jsRow, email, dtReported, readerId);
       // ----------------------------------------------------------------
       //
       // Locate book by ISBN
       //
-      var b: TBook;
-      b := FBooksConfig.GetAllBooks.FindByISBN (isbn);
-      if not Assigned then
-        ZwróćKodBłędu & exit;
+      b := FBooksConfig.GetBookList(blAll).FindByISBN(bookISBN);
+      if not Assigned(b) then
+        raise Exception.Create('Invalid book isbn');
       // ----------------------------------------------------------------
       //
-      // Append a new reader into the database
+      // Append a new reader into the database if requred:
+      // Fields: ReaderId, FirstName, LastName, Email, Company, BooksRead,
+      // LastReport, ReadersCreated
       //
-      maxID := DataModMain.GetMaxValueInDataSet(DataModMain.mtabReaders,
-        'ReaderId');
-      DataModMain.mtabReaders.AppendRecord([maxID + 1, firstName, lastName,
-        email, company, 1, dt, now()]);
+      if VarIsNull(readerId) then
+      begin
+        readerId := DataModMain.GetMaxValueInDataSet(DataModMain.mtabReaders,
+          'ReaderId') + 1;
+        DataModMain.mtabReaders.AppendRecord([readerId, firstName, lastName,
+          email, company, 1, dtReported, Now()]);
+      end;
       // ----------------------------------------------------------------
-      if FDevM then
+      //
+      // Append report into the database:
+      // Fields: ReaderId, ISBN, Rating, Oppinion, Reported
+      //
+      DataModMain.mtabReports.AppendRecord([readerId, bookISBN, rating,
+        oppinion, dtReported]);
+      // ----------------------------------------------------------------
+      if FDevMod then
         Insert([rating.ToString], ss, maxInt);
     end;
-    if FDevM then
+    // ----------------------------------------------------------------
+    with TSplitter.Create(frm) do
+    begin
+      Align := alBottom;
+      Parent := frm;
+      Height := 5;
+    end;
+    DBGrid1.Margins.Bottom := 0;
+    DataSrc2 := TDataSource.Create(frm);
+    DBGrid2 := TDBGrid.Create(frm);
+    DBGrid2.AlignWithMargins := True;
+    DBGrid2.Parent := frm;
+    DBGrid2.Align := alBottom;
+    DBGrid2.Height := frm.Height div 3;
+    DBGrid2.DataSource := DataSrc2;
+    DataSrc2.DataSet := DataModMain.mtabReports;
+    DBGrid2.Margins.Top := 0;
+    AutoSizeColumns(DBGrid2);
+    if FDevMod then
       Caption := String.Join(' ,', ss);
   finally
     jsData.Free;
@@ -381,16 +488,16 @@ begin
   // Check: If we are in developer mode
   //
   // Developer mode id used to change application configuration
-  // during test 
-  { TODO: Meanigful name for FDevM }
+  // during test
+  { TODO 1: Meanigful name for FDevMod }
 {$IFDEF DEBUG}
   Extention := '.dpr';
   ExeName := ExtractFileName(Application.ExeName);
   ProjectFileName := ChangeFileExt(ExeName, Extention);
-  FDevM := FileExists(ProjectFileName) or
+  FDevMod := FileExists(ProjectFileName) or
     FileExists('..\..\' + ProjectFileName);
 {$ELSE}
-  FDevM := False;
+  FDevMod := False;
 {$ENDIF}
   pnMain.Caption := '';
 end;
@@ -425,6 +532,17 @@ begin
   lbxBooksReaded.Height := avaliable div 2;
 end;
 
+procedure TForm1.ValidateBook(jsRow: TJSONObject; email: string;
+  dtReported: TDateTime; var readerId: Variant);
+begin
+  { TODO 3: [A] Extract to record TReaderReport (Separate model layer) }
+  if not CheckEmail(email) then
+    raise Exception.Create('Invalid email addres');
+  if not IsValidIsoDateUtc(jsRow, 'created', dtReported) then
+    raise Exception.Create('Invalid date. Expected ISO format');
+  readerId := DataModMain.FindReaderByEmil(email);
+end;
+
 procedure TForm1.Splitter1Moved(Sender: TObject);
 begin
   (Sender as TSplitter).Tag := 1;
@@ -449,13 +567,14 @@ var
   DataGrid: TDBGrid;
 begin
   tmrAppReady.Enabled := False;
-  if FDevM then
+  if FDevMod then
     ReportMemoryLeaksOnShutdown := True;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
   // Create and show Welcome Frame
   //
+  { TODO 2: [B] Extract method. Read comments and use meaningful }
   frm := TFrameWelcome.Create(pnMain);
   frm.Parent := pnMain;
   frm.Visible := True;
@@ -530,7 +649,7 @@ begin
   FBooksConfig := TBooksListBoxConfigurator.Create(self);
   FBooksConfig.PrepareListBoxes(lbxBooksReaded, lbxBooksAvaliable2);
   // ----------------------------------------------------------
-  // ----------------------------------------------------------
+  // ----------------------------`------------------------------
   //
   // Create Books Table
   datasrc := TDataSource.Create(frm);
