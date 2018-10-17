@@ -1,5 +1,5 @@
-﻿unit ExtGUI.ListBox.Books;
-
+﻿
+unit ExtGUI.ListBox.Books;
 interface
 
 uses
@@ -34,9 +34,13 @@ type
   end;
 
 type
+  { TODO 1: Incorrect prefix. Should be blk }
   TBookListKind = (blAll, blOnShelf, blAvaliable);
 
 type
+  { TODO 3: Too many responsibilities. Separate GUI from structures  }
+  // Split into 2 classes TBooksContainer TListBoxesForBooks
+  // Add new unit: Model.Books.pas
   TBooksListBoxConfigurator = class(TComponent)
   private
     FAllBooks: TBookCollection;
@@ -54,6 +58,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    { TODO 3: Introduce 3 properties: ListBoxOnShelf, ListBoxAvaliable, Books }
     procedure PrepareListBoxes(lbxOnShelf, lbxAvaliable: TListBox);
     function GetBookList (kind: TBookListKind): TBookCollection; 
     function FindBook (isbn: string): TBook;
@@ -79,6 +84,7 @@ begin
   inherited;
   // ---------------------------------------------------
   FAllBooks := TBookCollection.Create();
+  { TODO 3: Discuss how to remove this dependency. Check implentation uses }
   BooksDAO := GetBooks_FireDAC(DataModMain.mtabBooks);
   FAllBooks.LoadDataSet(BooksDAO);
   // ---------------------------------------------------
@@ -134,8 +140,8 @@ var
 begin
   FListBoxOnShelf := lbxOnShelf;
   FListBoxAvaliable := lbxAvaliable;
-  for b in FBooksAvaliable do
-    FListBoxAvaliable.AddItem(b.title, b);
+  { TODO 2: Repeated code. Violation of the DRY rule }
+  // New private method: SetupListBox
   // -----------------------------------------------------------------
   // ListBox: books on the shelf
   for b in FBooksOnShelf do
@@ -149,6 +155,8 @@ begin
   FListBoxOnShelf.ItemHeight := 50;
   // -----------------------------------------------------------------
   // ListBox: books avaliable
+  for b in FBooksAvaliable do
+    FListBoxAvaliable.AddItem(b.title, b);
   FListBoxAvaliable.OnDragDrop := EventOnDragDrop;
   FListBoxAvaliable.OnDragOver := EventOnDragOver;
   FListBoxAvaliable.OnStartDrag := EventOnStartDrag;

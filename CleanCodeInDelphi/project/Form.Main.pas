@@ -354,7 +354,7 @@ begin
   try
     for i := 0 to jsData.Count - 1 do
     begin
-      { TODO 2: Violation oh the DRY rule }
+      { TODO 2: Repeated code. Violation of the DRY rule }
       // Use TJSONObject helper Values return Variant.Null
       // ----------------------------------------------------------------
       //
@@ -452,7 +452,6 @@ begin
   end;
 end;
 
-{ ********** BP BP ********** }
 procedure TForm1.ChromeTabs1ButtonCloseTabClick(Sender: TObject;
   ATab: TChromeTab; var Close: Boolean);
 var
@@ -490,6 +489,7 @@ begin
   // Developer mode id used to change application configuration
   // during test
   { TODO 1: Meaningful name for FDevMod }
+  { TODO 2: [Helper] TApplication.IsDeveloperMode }
 {$IFDEF DEBUG}
   Extention := '.dpr';
   ExeName := ExtractFileName(Application.ExeName);
@@ -508,11 +508,13 @@ var
   avaliable: Integer;
   labelPixelHeight: Integer;
 begin
+  { TODO 1: Commented out function. Just delete it }
   (*
     sum := lbxBooksAvaliable.Height + lbxBooksCooming.Height;
     lbxBooksAvaliable.Height := sum div 2;
     lbxBooksCooming.Height := sum div 2;
   *)
+  { TODO 3: Move into TBooksListBoxConfigurator }
   with TBitmap.Create do
   begin
     Canvas.Font.Size := GroupBox1.Font.Height;
@@ -569,6 +571,7 @@ begin
   tmrAppReady.Enabled := False;
   if FDevMod then
     ReportMemoryLeaksOnShutdown := True;
+  { TODO 3: Move into TBooksListBoxConfigurator }
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
@@ -652,14 +655,21 @@ begin
   // ----------------------------`------------------------------
   //
   // Create Books Table
-  datasrc := TDataSource.Create(frm);
-  DataGrid := TDBGrid.Create(frm);
-  DataGrid.AlignWithMargins := True;
-  DataGrid.Parent := frm;
-  DataGrid.Align := alClient;
-  DataGrid.DataSource := datasrc;
-  datasrc.DataSet := DataModMain.mtabBooks;
-  AutoSizeColumns(DataGrid);
+  { TODO 1: Commented out function. It's usefull. Define glogan variable }
+  // Move this into TWelcomeFrame 
+  {
+  if FDevMod then
+  begin
+    datasrc := TDataSource.Create(frm);
+    DataGrid := TDBGrid.Create(frm);
+    DataGrid.AlignWithMargins := True;
+    DataGrid.Parent := frm;
+    DataGrid.Align := alClient;
+    DataGrid.DataSource := datasrc;
+    datasrc.DataSet := DataModMain.mtabBooks;
+    AutoSizeColumns(DataGrid);
+  end;
+  }
 end;
 
 end.

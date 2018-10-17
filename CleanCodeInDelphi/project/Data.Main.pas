@@ -134,6 +134,7 @@ var
   recNo: integer;
   email: string;
 begin
+  { TODO 2: Repeated code. Violation of the DRY rule }
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
