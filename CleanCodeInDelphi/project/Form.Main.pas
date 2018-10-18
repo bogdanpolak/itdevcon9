@@ -1,4 +1,5 @@
 ﻿unit Form.Main;
+{ TODO 1 : [0]  Check zero compiler warnings and hint }
 
 interface
 
@@ -51,7 +52,7 @@ type
     procedure ResizeGroupBox();
     { TODO 1: Meaningful name. Check comments in the implementation }
     procedure ValidateBook(jsRow: TJSONObject; email: string;
-      dtReported: TDateTime; var readerId: Variant);
+      dtReported: TDateTime);
   public
     FDConnection1: TFDConnectionMock;
   end;
@@ -279,6 +280,7 @@ begin
   //
   // Import new Books data from OpenAPI
   //
+  { TODO 2: [A] Extract method. Read comments and use meaningful name }
   jsBooks := ImportBooksFromWebService(Client_API_Token);
   try
     for i := 0 to jsBooks.Count - 1 do
@@ -334,7 +336,7 @@ begin
   //
   // Dynamically Add TDBGrid to TFrameImport
   //
-  { TODO 2: Move functionality into TFrameImport }
+  { TODO 2: [C] Move code down separate bussines logic from GUI }
   // warning for dataset dependencies, discuss TDBGrid dependencies
   DataSrc1 := TDataSource.Create(frm);
   DBGrid1 := TDBGrid.Create(frm);
@@ -347,14 +349,17 @@ begin
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
-  // Import new Reder Reports data from OpenAPI
+  // Import new Reader Reports data from OpenAPI
+  // - Load JSON from WebService
+  // - Validate JSON and insert new a Readers into the Database
   //
-  jsData := ImportReadersFromWebService(Client_API_Token);
-  { TODO 2: try-catch is separate responsibility }
+  jsData := ImportReaderReportsFromWebService(Client_API_Token);
+  { TODO 2: [D] Extract method. Block try-catch is separate responsibility }
   try
     for i := 0 to jsData.Count - 1 do
     begin
-      { TODO 2: Repeated code. Violation of the DRY rule }
+      { TODO 3: [A] Extract Reader Report code into the record TReaderReport (model layer) }
+      { TODO 2: [F] Repeated code. Violation of the DRY rule }
       // Use TJSONObject helper Values return Variant.Null
       // ----------------------------------------------------------------
       //
@@ -395,24 +400,31 @@ begin
       //
       // Validate imported Reader report
       //
-      ValidateBook(jsRow, email, dtReported, readerId);
+      { TODO 2: [E] Move validation up. Before reading data }
+      ValidateBook(jsRow, email, dtReported);
       // ----------------------------------------------------------------
       //
       // Locate book by ISBN
       //
+      { TODO 2: [G] Extract method }
       b := FBooksConfig.GetBookList(blAll).FindByISBN(bookISBN);
       if not Assigned(b) then
         raise Exception.Create('Invalid book isbn');
       // ----------------------------------------------------------------
+      // Find the Reader in then database using an email address
+      readerId := DataModMain.FindReaderByEmil(email);
+      // ----------------------------------------------------------------
       //
       // Append a new reader into the database if requred:
-      // Fields: ReaderId, FirstName, LastName, Email, Company, BooksRead,
-      // LastReport, ReadersCreated
-      //
       if VarIsNull(readerId) then
       begin
+        { TODO 2: [G] Extract method }
         readerId := DataModMain.GetMaxValueInDataSet(DataModMain.mtabReaders,
           'ReaderId') + 1;
+        //
+        // Fields: ReaderId, FirstName, LastName, Email, Company, BooksRead,
+        // LastReport, ReadersCreated
+        //
         DataModMain.mtabReaders.AppendRecord([readerId, firstName, lastName,
           email, company, 1, dtReported, Now()]);
       end;
@@ -427,6 +439,9 @@ begin
       if FDevMod then
         Insert([rating.ToString], ss, maxInt);
     end;
+    // ----------------------------------------------------------------
+    if FDevMod then
+      Caption := String.Join(' ,', ss);
     // ----------------------------------------------------------------
     with TSplitter.Create(frm) do
     begin
@@ -445,8 +460,6 @@ begin
     DataSrc2.DataSet := DataModMain.mtabReports;
     DBGrid2.Margins.Top := 0;
     AutoSizeColumns(DBGrid2);
-    if FDevMod then
-      Caption := String.Join(' ,', ss);
   finally
     jsData.Free;
   end;
@@ -535,14 +548,12 @@ begin
 end;
 
 procedure TForm1.ValidateBook(jsRow: TJSONObject; email: string;
-  dtReported: TDateTime; var readerId: Variant);
+  dtReported: TDateTime);
 begin
-  { TODO 3: [A] Extract to record TReaderReport (Separate model layer) }
   if not CheckEmail(email) then
     raise Exception.Create('Invalid email addres');
   if not IsValidIsoDateUtc(jsRow, 'created', dtReported) then
     raise Exception.Create('Invalid date. Expected ISO format');
-  readerId := DataModMain.FindReaderByEmil(email);
 end;
 
 procedure TForm1.Splitter1Moved(Sender: TObject);
@@ -571,7 +582,6 @@ begin
   tmrAppReady.Enabled := False;
   if FDevMod then
     ReportMemoryLeaksOnShutdown := True;
-  { TODO 3: Move into TBooksListBoxConfigurator }
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
@@ -654,9 +664,8 @@ begin
   // ----------------------------------------------------------
   // ----------------------------`------------------------------
   //
-  // Create Books Table
-  { TODO 1: Commented out function. It's usefull. Define glogan variable }
-  // Move this into TWelcomeFrame 
+  // Create Books Grid for Quality Tests
+  { TODO 1: Commented out function. It's usefull. Define global variable }
   {
   if FDevMod then
   begin

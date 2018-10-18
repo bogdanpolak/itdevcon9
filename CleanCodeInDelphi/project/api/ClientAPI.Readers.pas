@@ -5,7 +5,7 @@ interface
 uses
   System.JSON;
 
-function ImportReadersFromWebService (const token:string): TJSONArray;
+function ImportReaderReportsFromWebService (const token:string): TJSONArray;
 
 implementation
 
@@ -29,7 +29,7 @@ begin
   Result := TJSONObject.ParseJSONValue(FileContent);
 end;
 
-function ImportReadersFromWebService (const token:string): TJSONArray;
+function ImportReaderReportsFromWebService (const token:string): TJSONArray;
 var
   jsValue: TJSONValue;
 begin
