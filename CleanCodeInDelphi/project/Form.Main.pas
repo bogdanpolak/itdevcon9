@@ -13,6 +13,8 @@ uses
   ExtGUI.ListBox.Books;
 
 type
+  TFrameClass = class of TFrame;
+
   TForm1 = class(TForm)
     GroupBox1: TGroupBox;
     lbBooksReaded: TLabel;
@@ -39,6 +41,8 @@ type
     FApplicationInDeveloperMode: Boolean;
     procedure AutoSizeBooksGroupBoxes();
     procedure ImportNewBooksFromOpenAPI;
+    function CreateAndShowFrame(FrameClass: TFrameClass;
+      const Title: string): TFrame;
   public
     FDConnection1: TFDConnectionMock;
   end;
@@ -127,7 +131,7 @@ begin
   for i := 0 to DBGrid.Columns.Count - 1 do
     if DBGrid.Columns[i].Visible then
       ColumnsWidth[i] := DBGrid.Canvas.TextWidth
-        (DBGrid.Columns[i].title.Caption + '   ')
+        (DBGrid.Columns[i].Title.Caption + '   ')
     else
       ColumnsWidth[i] := 0;
   if DBGrid.DataSource <> nil then
@@ -268,23 +272,7 @@ var
   b: TBook;
 begin
   ImportNewBooksFromOpenAPI;
-  // ----------------------------------------------------------
-  // ----------------------------------------------------------
-  //
-  // Create new frame, show it add to ChromeTabs
-  // 1. Create TFrameImport.
-  // 2. Embed frame in pnMain (show)
-  // 3. Add new ChromeTab
-  //
-  { TODO 2: [B] Extract method. Read comments and use meaningful }
-  // Look for ChromeTabs1.Tabs.Add for code duplication
-  frm := TFrameImport.Create(pnMain);
-  frm.Parent := pnMain;
-  frm.Visible := True;
-  frm.Align := alClient;
-  tab := ChromeTabs1.Tabs.Add;
-  tab.Caption := 'Readers';
-  tab.Data := frm;
+  frm := CreateAndShowFrame(TFrameImport, 'Readers Report') as TFrameImport;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
@@ -517,7 +505,7 @@ begin
       jsBook := jsBooks.Items[i] as TJSONObject;
       b := TBook.Create;
       b.status := jsBook.Values['status'].Value;
-      b.title := jsBook.Values['title'].Value;
+      b.Title := jsBook.Values['title'].Value;
       b.isbn := jsBook.Values['isbn'].Value;
       b.author := jsBook.Values['author'].Value;
       TextBookReleseDate := jsBook.Values['date'].Value;
@@ -535,7 +523,7 @@ begin
         // Append report into the database:
         // Fields: ISBN, Title, Authors, Status, ReleseDate, Pages, Price,
         // Currency, Imported, Description
-        DataModMain.mtabBooks.InsertRecord([b.isbn, b.title, b.author, b.status,
+        DataModMain.mtabBooks.InsertRecord([b.isbn, b.Title, b.author, b.status,
           b.releseDate, b.pages, b.price, b.currency, b.imported,
           b.description]);
       end;
@@ -543,6 +531,22 @@ begin
   finally
     jsBooks.Free;
   end;
+end;
+
+function TForm1.CreateAndShowFrame(FrameClass: TFrameClass;
+  const Title: string): TFrame;
+var
+  tab: TChromeTab;
+  frm: TFrame;
+begin
+  frm := FrameClass.Create(pnMain);
+  frm.Parent := pnMain;
+  frm.Visible := True;
+  frm.Align := alClient;
+  tab := ChromeTabs1.Tabs.Add;
+  tab.Caption := Title;
+  tab.Data := frm;
+  Result := frm;
 end;
 
 procedure TForm1.Splitter1Moved(Sender: TObject);
@@ -553,7 +557,6 @@ end;
 procedure TForm1.tmrAppReadyTimer(Sender: TObject);
 var
   frm: TFrameWelcome;
-  tab: TChromeTab;
   VersionNr: Integer;
   msg1: string;
   UserName: string;
@@ -565,19 +568,7 @@ begin
   tmrAppReady.Enabled := False;
   if FApplicationInDeveloperMode then
     ReportMemoryLeaksOnShutdown := True;
-  // ----------------------------------------------------------
-  // ----------------------------------------------------------
-  //
-  // Create and show Welcome Frame
-  //
-  { TODO 2: [B] Extract method. Read comments and use meaningful }
-  frm := TFrameWelcome.Create(pnMain);
-  frm.Parent := pnMain;
-  frm.Visible := True;
-  frm.Align := alClient;
-  tab := ChromeTabs1.Tabs.Add;
-  tab.Caption := 'Welcome';
-  tab.Data := frm;
+  frm := CreateAndShowFrame(TFrameWelcome, 'Welcome') as TFrameWelcome;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
