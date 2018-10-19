@@ -36,12 +36,8 @@ type
     procedure tmrAppReadyTimer(Sender: TObject);
   private
     FBooksConfig: TBooksListBoxConfigurator;
-    { TODO 1: Meanigfull name needed. If we are in developer mode }
-    FDevMod: Boolean;
-    { TODO 1: Naming convention violation. It's not used .... check it }
-    isDatabaseOK: Boolean;
-    { TODO 1: Meaningful name: AutoSizeBooksGroupBoxes }
-    procedure ResizeGroupBox();
+    FApplicationInDeveloperMode: Boolean;
+    procedure AutoSizeBooksGroupBoxes();
   public
     FDConnection1: TFDConnectionMock;
   end;
@@ -84,7 +80,7 @@ end;
 
 procedure TForm1.FormResize(Sender: TObject);
 begin
-  ResizeGroupBox();
+  AutoSizeBooksGroupBoxes();
 end;
 
 { TODO 2: [Helper] TWinControl class helper }
@@ -297,7 +293,7 @@ begin
       b.currency := jsBook.Values['currency'].Value;
       b.description := jsBook.Values['description'].Value;
       b.imported := Now();
-      b2 := FBooksConfig.GetBookList(blAll).FindByISBN(b.isbn);
+      b2 := FBooksConfig.GetBookList(blkAll).FindByISBN(b.isbn);
       if not Assigned(b2) then
       begin
         FBooksConfig.InsertNewBook(b);
@@ -406,7 +402,7 @@ begin
       // Locate book by ISBN
       //
       { TODO 2: [G] Extract method }
-      b := FBooksConfig.GetBookList(blAll).FindByISBN(bookISBN);
+      b := FBooksConfig.GetBookList(blkAll).FindByISBN(bookISBN);
       if not Assigned(b) then
         raise Exception.Create('Invalid book isbn');
       // ----------------------------------------------------------------
@@ -435,11 +431,11 @@ begin
       DataModMain.mtabReports.AppendRecord([readerId, bookISBN, rating,
         oppinion, dtReported]);
       // ----------------------------------------------------------------
-      if FDevMod then
+      if FApplicationInDeveloperMode then
         Insert([rating.ToString], ss, maxInt);
     end;
     // ----------------------------------------------------------------
-    if FDevMod then
+    if FApplicationInDeveloperMode then
       Caption := String.Join(' ,', ss);
     // ----------------------------------------------------------------
     with TSplitter.Create(frm) do
@@ -500,21 +496,23 @@ begin
   //
   // Developer mode id used to change application configuration
   // during test
-  { TODO 1: Meaningful name for FDevMod }
   { TODO 2: [Helper] TApplication.IsDeveloperMode }
 {$IFDEF DEBUG}
   Extention := '.dpr';
   ExeName := ExtractFileName(Application.ExeName);
   ProjectFileName := ChangeFileExt(ExeName, Extention);
-  FDevMod := FileExists(ProjectFileName) or
+  FApplicationInDeveloperMode := FileExists(ProjectFileName) or
     FileExists('..\..\' + ProjectFileName);
 {$ELSE}
+  // To rename attribute (variable in the object) FDevMod I'm using buiid in
+  // IDE refactoring which is great, but be aware:
+  // Refactoring [Rename Variable] can't find this place :-(
   FDevMod := False;
 {$ENDIF}
   pnMain.Caption := '';
 end;
 
-procedure TForm1.ResizeGroupBox();
+procedure TForm1.AutoSizeBooksGroupBoxes();
 var
   sum: Integer;
   avaliable: Integer;
@@ -558,7 +556,7 @@ var
   DataGrid: TDBGrid;
 begin
   tmrAppReady.Enabled := False;
-  if FDevMod then
+  if FApplicationInDeveloperMode then
     ReportMemoryLeaksOnShutdown := True;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
@@ -579,7 +577,6 @@ begin
   // Connect to database server
   // Check application user and database structure (DB version)
   //
-  isDatabaseOK := False;
   try
     UserName := FDManager.ConnectionDefs.ConnectionDefByName
       (FDConnection1.ConnectionDefName).Params.UserName;
@@ -616,7 +613,7 @@ begin
   end;
   VersionNr := res;
   if VersionNr = ExpectedDatabaseVersionNr then
-    isDatabaseOK := True
+    { TODO: Why the application is doing nothing when we successfully connected into the database }
   else
   begin
     frm.AddInfo(0, StrNotSupportedDBVersion, True);
@@ -645,7 +642,7 @@ begin
   // Create Books Grid for Quality Tests
   //
   { TODO 2: [H] Extract method. See comments }
-  if FDevMod and InInternalQualityMode then
+  if FApplicationInDeveloperMode and InInternalQualityMode then
   begin
     datasrc := TDataSource.Create(frm);
     DataGrid := TDBGrid.Create(frm);

@@ -32,8 +32,7 @@ type
   end;
 
 type
-  { TODO 1: Incorrect prefix. Should be blk }
-  TBookListKind = (blAll, blOnShelf, blAvaliable);
+  TBookListKind = (blkAll, blkOnShelf, blkAvaliable);
 
 type
   { TODO 3: Too many responsibilities. Separate GUI from structures  }
@@ -103,9 +102,9 @@ function TBooksListBoxConfigurator.GetBookList (kind: TBookListKind):
   TBookCollection;
 begin
   case kind of
-    blAll: Result := FAllBooks;
-    blOnShelf: Result := FBooksOnShelf;
-    blAvaliable: Result := FBooksAvaliable
+    blkAll: Result := FAllBooks;
+    blkOnShelf: Result := FBooksOnShelf;
+    blkAvaliable: Result := FBooksAvaliable
     else Result := nil;
   end;
 end;
@@ -276,15 +275,12 @@ end;
 
 function TBookCollection.FindByISBN (const ISBN: string): TBook;
 var
-  i: Integer;
+  b: TBook;
 begin
-  { TODO 1: Dijkstra structural programming rule violation }
-  { TODO 1: More readable code for b in Items do. Shorter method }
-  // Dijkstra: one entrance and one exit
-  for i := 0 to Self.Count-1 do
-    if Self.Items[i].isbn = ISBN then
+  for b in Self do
+    if b.isbn = ISBN then
     begin
-      Result := Self.Items[i];
+      Result := b;
       exit;
     end;
   Result := nil;
