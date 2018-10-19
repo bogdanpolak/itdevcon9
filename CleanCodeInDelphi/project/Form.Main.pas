@@ -276,21 +276,6 @@ begin
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
-  // Dynamically Add TDBGrid to TFrameImport
-  //
-  { TODO 2: [C] Move code down separate bussines logic from GUI }
-  // warning for dataset dependencies, discuss TDBGrid dependencies
-  DataSrc1 := TDataSource.Create(frm);
-  DBGrid1 := TDBGrid.Create(frm);
-  DBGrid1.AlignWithMargins := True;
-  DBGrid1.Parent := frm;
-  DBGrid1.Align := alClient;
-  DBGrid1.DataSource := DataSrc1;
-  DataSrc1.DataSet := DataModMain.mtabReaders;
-  AutoSizeColumns(DBGrid1);
-  // ----------------------------------------------------------
-  // ----------------------------------------------------------
-  //
   // Import new Reader Reports data from OpenAPI
   // - Load JSON from WebService
   // - Validate JSON and insert new a Readers into the Database
@@ -384,27 +369,41 @@ begin
     // ----------------------------------------------------------------
     if FApplicationInDeveloperMode then
       Caption := String.Join(' ,', ss);
-    // ----------------------------------------------------------------
-    with TSplitter.Create(frm) do
-    begin
-      Align := alBottom;
-      Parent := frm;
-      Height := 5;
-    end;
-    DBGrid1.Margins.Bottom := 0;
-    DataSrc2 := TDataSource.Create(frm);
-    DBGrid2 := TDBGrid.Create(frm);
-    DBGrid2.AlignWithMargins := True;
-    DBGrid2.Parent := frm;
-    DBGrid2.Align := alBottom;
-    DBGrid2.Height := frm.Height div 3;
-    DBGrid2.DataSource := DataSrc2;
-    DataSrc2.DataSet := DataModMain.mtabReports;
-    DBGrid2.Margins.Top := 0;
-    AutoSizeColumns(DBGrid2);
   finally
     jsData.Free;
   end;
+  // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  //
+  // Dynamically Add TDBGrid to TFrameImport
+  //
+  { TODO: Move this GUI creation into TFrameImport }
+  DataSrc1 := TDataSource.Create(frm);
+  DBGrid1 := TDBGrid.Create(frm);
+  DBGrid1.AlignWithMargins := True;
+  DBGrid1.Parent := frm;
+  DBGrid1.Align := alClient;
+  DBGrid1.DataSource := DataSrc1;
+  DataSrc1.DataSet := DataModMain.mtabReaders;
+  AutoSizeColumns(DBGrid1);
+  // ----------------------------------------------------------------
+  with TSplitter.Create(frm) do
+  begin
+    Align := alBottom;
+    Parent := frm;
+    Height := 5;
+  end;
+  DBGrid1.Margins.Bottom := 0;
+  DataSrc2 := TDataSource.Create(frm);
+  DBGrid2 := TDBGrid.Create(frm);
+  DBGrid2.AlignWithMargins := True;
+  DBGrid2.Parent := frm;
+  DBGrid2.Align := alBottom;
+  DBGrid2.Height := frm.Height div 3;
+  DBGrid2.DataSource := DataSrc2;
+  DataSrc2.DataSet := DataModMain.mtabReports;
+  DBGrid2.Margins.Top := 0;
+  AutoSizeColumns(DBGrid2);
 end;
 
 procedure TForm1.ChromeTabs1ButtonCloseTabClick(Sender: TObject;
