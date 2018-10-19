@@ -52,6 +52,7 @@ type
       State: TDragState; var Accept: Boolean);
     procedure EventOnDrawItem(Control: TWinControl; Index: integer; Rect: TRect;
       State: TOwnerDrawState);
+    procedure AddBookToProperListByStatus(b: TBook);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -82,12 +83,7 @@ begin
   FBooksOnShelf := TBookCollection.Create(false);
   FBooksAvaliable := TBookCollection.Create(false);
   for b in FAllBooks do
-  begin
-    if b.status = 'on-shelf' then
-      FBooksOnShelf.Add(b)
-    else if b.status = 'avaliable' then
-      FBooksAvaliable.Add(b)
-  end;
+    AddBookToProperListByStatus(b);
 end;
 
 destructor TBooksListBoxConfigurator.Destroy;
@@ -112,12 +108,16 @@ end;
 procedure TBooksListBoxConfigurator.InsertNewBook(b: TBook);
 begin
   FAllBooks.Add(b);
-  { TODO 2: [A] Code duplication, look on the TBooksListBoxConfigurator.Create }
+  AddBookToProperListByStatus(b);
+  FListBoxAvaliable.AddItem(b.title,b);
+end;
+
+procedure TBooksListBoxConfigurator.AddBookToProperListByStatus(b: TBook);
+begin
   if b.status = 'on-shelf' then
     FBooksOnShelf.Add(b)
   else if b.status = 'avaliable' then
     FBooksAvaliable.Add(b);
-  FListBoxAvaliable.AddItem(b.title,b);
 end;
 
 function TBooksListBoxConfigurator.FindBook (isbn: string): TBook;
