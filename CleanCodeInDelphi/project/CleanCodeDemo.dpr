@@ -22,7 +22,8 @@ uses
   ExtGUI.ListBox.Books in 'ExtGUI.ListBox.Books.pas',
   DataAccess.Readers.FireDAC in 'experimental\DataAccess.Readers.FireDAC.pas',
   DataAccess.Readers in 'experimental\DataAccess.Readers.pas',
-  Scripts.Readers in 'experimental\Scripts.Readers.pas';
+  Scripts.Readers in 'experimental\Scripts.Readers.pas',
+  Consts.SQL in 'Consts.SQL.pas';
 
 {$R *.res}
 

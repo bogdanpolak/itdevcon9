@@ -53,7 +53,7 @@ uses
   System.StrUtils, System.Math, System.DateUtils,
   System.RegularExpressions, System.JSON,
   Frame.Welcome, Consts.Application, Utils.CipherAES128, Frame.Import,
-  Utils.General, Data.Main, ClientAPI.Readers, ClientAPI.Books;
+  Utils.General, Data.Main, ClientAPI.Readers, ClientAPI.Books, Consts.SQL;
 
 const
   SecureKey = 'delphi-is-the-best';
@@ -599,9 +599,7 @@ begin
     end;
   end;
   try
-    { TODO 1: SQL commands inlined - extract as constants }
-    // SQL_SELELECT: DatabaseVersion
-    res := FDConnection1.ExecSQLScalar('SELECT versionnr FROM DBInfo');
+    res := FDConnection1.ExecSQLScalar(SQL_SELECT_DatabaseVersion);
   except
     on E: EFDDBEngineException do
     begin
