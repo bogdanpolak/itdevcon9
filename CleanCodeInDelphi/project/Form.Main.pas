@@ -38,6 +38,7 @@ type
     FBooksConfig: TBooksListBoxConfigurator;
     FApplicationInDeveloperMode: Boolean;
     procedure AutoSizeBooksGroupBoxes();
+    procedure ImportNewBooksFromOpenAPI;
   public
     FDConnection1: TFDConnectionMock;
   end;
@@ -265,50 +266,8 @@ var
   dtReported: TDateTime;
   readerId: Variant;
   b: TBook;
-  jsBooks: TJSONArray;
-  jsBook: TJSONObject;
-  TextBookReleseDate: string;
-  b2: TBook;
 begin
-  // ----------------------------------------------------------
-  // ----------------------------------------------------------
-  //
-  // Import new Books data from OpenAPI
-  //
-  { TODO 2: [A] Extract method. Read comments and use meaningful name }
-  jsBooks := ImportBooksFromWebService(Client_API_Token);
-  try
-    for i := 0 to jsBooks.Count - 1 do
-    begin
-      jsBook := jsBooks.Items[i] as TJSONObject;
-      b := TBook.Create;
-      b.status := jsBook.Values['status'].Value;
-      b.title := jsBook.Values['title'].Value;
-      b.isbn := jsBook.Values['isbn'].Value;
-      b.author := jsBook.Values['author'].Value;
-      TextBookReleseDate := jsBook.Values['date'].Value;
-      b.releseDate := BooksToDateTime(TextBookReleseDate);
-      b.pages := (jsBook.Values['pages'] as TJSONNumber).AsInt;
-      b.price := StrToCurr(jsBook.Values['price'].Value);
-      b.currency := jsBook.Values['currency'].Value;
-      b.description := jsBook.Values['description'].Value;
-      b.imported := Now();
-      b2 := FBooksConfig.GetBookList(blkAll).FindByISBN(b.isbn);
-      if not Assigned(b2) then
-      begin
-        FBooksConfig.InsertNewBook(b);
-        // ----------------------------------------------------------------
-        // Append report into the database:
-        // Fields: ISBN, Title, Authors, Status, ReleseDate, Pages, Price,
-        // Currency, Imported, Description
-        DataModMain.mtabBooks.InsertRecord([b.isbn, b.title, b.author,
-          b.status, b.releseDate, b.pages, b.price, b.currency, b.imported,
-          b.description]);
-      end;
-    end;
-  finally
-    jsBooks.Free;
-  end;
+  ImportNewBooksFromOpenAPI;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
@@ -536,6 +495,54 @@ begin
     avaliable := avaliable - lbxBooksAvaliable2.Margins.Top -
       lbxBooksAvaliable2.Margins.Bottom;
   lbxBooksReaded.Height := avaliable div 2;
+end;
+
+procedure TForm1.ImportNewBooksFromOpenAPI;
+var
+  jsBooks: TJSONArray;
+  jsBook: TJSONObject;
+  i: Integer;
+  TextBookReleseDate: string;
+  b2: TBook;
+  b: TBook;
+begin
+  { TODO 3: Two responsibilities in one method. Needs to be separated }
+  // 1) Load new books for Web Service
+  // 2) Import books form JSON
+  // ** 3) Inserting books into DB table :-)
+  jsBooks := ImportBooksFromWebService(Client_API_Token);
+  try
+    for i := 0 to jsBooks.Count - 1 do
+    begin
+      jsBook := jsBooks.Items[i] as TJSONObject;
+      b := TBook.Create;
+      b.status := jsBook.Values['status'].Value;
+      b.title := jsBook.Values['title'].Value;
+      b.isbn := jsBook.Values['isbn'].Value;
+      b.author := jsBook.Values['author'].Value;
+      TextBookReleseDate := jsBook.Values['date'].Value;
+      b.releseDate := BooksToDateTime(TextBookReleseDate);
+      b.pages := (jsBook.Values['pages'] as TJSONNumber).AsInt;
+      b.price := StrToCurr(jsBook.Values['price'].Value);
+      b.currency := jsBook.Values['currency'].Value;
+      b.description := jsBook.Values['description'].Value;
+      b.imported := Now;
+      b2 := FBooksConfig.GetBookList(blkAll).FindByISBN(b.isbn);
+      if not Assigned(b2) then
+      begin
+        FBooksConfig.InsertNewBook(b);
+        // ----------------------------------------------------------------
+        // Append report into the database:
+        // Fields: ISBN, Title, Authors, Status, ReleseDate, Pages, Price,
+        // Currency, Imported, Description
+        DataModMain.mtabBooks.InsertRecord([b.isbn, b.title, b.author, b.status,
+          b.releseDate, b.pages, b.price, b.currency, b.imported,
+          b.description]);
+      end;
+    end;
+  finally
+    jsBooks.Free;
+  end;
 end;
 
 procedure TForm1.Splitter1Moved(Sender: TObject);
