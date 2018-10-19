@@ -520,12 +520,6 @@ var
   avaliable: Integer;
   labelPixelHeight: Integer;
 begin
-  { TODO 1: Commented out function. Just delete it }
-  (*
-    sum := lbxBooksAvaliable.Height + lbxBooksCooming.Height;
-    lbxBooksAvaliable.Height := sum div 2;
-    lbxBooksCooming.Height := sum div 2;
-  *)
   { TODO 3: Move into TBooksListBoxConfigurator }
   with TBitmap.Create do
   begin

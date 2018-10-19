@@ -69,8 +69,6 @@ uses
   DataAccess.Books.FireDAC, Data.Main;
 
 const
-  { TODO 1 : [0] Remove const Books_API_Token }
-  Books_API_Token = 'BOOKS-arg58d8jmefcu5-1fceb';
 
 constructor TBooksListBoxConfigurator.Create(AOwner: TComponent);
 var

@@ -66,32 +66,6 @@ uses
   System.Variants, ClientAPI.Books;
 
 
-{ TODO 1: Commented out function. Just delete it }
-{
-function BooksToDateTime(const s: string): TDateTime;
-const
-  months: array [1 .. 12] of string = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
-var
-  m: string;
-  y: string;
-  i: integer;
-  mm: integer;
-  yy: integer;
-begin
-  m := s.Substring(0, 3);
-  y := s.Substring(4);
-  mm := 0;
-  for i := 1 to 12 do
-    if months[i].ToUpper = m.ToUpper then
-      mm := i;
-  if mm = 0 then
-    raise ERangeError.Create('Incorect month name in the date: ' + s);
-  yy := y.ToInteger();
-  Result := EncodeDate(yy, mm, 1);
-end;
-}
-
 function TDataModMain.FindReaderByEmil(const email: string): Variant;
 var
   ok: Boolean;
