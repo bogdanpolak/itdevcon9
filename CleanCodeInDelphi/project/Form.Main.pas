@@ -1,5 +1,4 @@
 ﻿unit Form.Main;
-{ TODO 1 : [0]  Check zero compiler warnings and hint }
 
 interface
 
@@ -9,11 +8,6 @@ uses
   Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Grids, Vcl.DBGrids, Data.DB,
   ChromeTabs, ChromeTabsClasses, ChromeTabsTypes,
   Fake.FDConnection,
-  {TODO 1: [0] Move System.JSON into implementation.}
-  // System.JSON is required because of method ValidateBook
-  // Change it into a public procedure and mark with TODO
-  // TODO 3 (colon) Move this procedure into class (idea)
-  System.JSON,
   {TODO 3: [D] Resolve dependency on ExtGUI.ListBox.Books. Too tightly coupled}
   // Dependency is requred by attribute TBooksListBoxConfigurator
   ExtGUI.ListBox.Books;
@@ -46,13 +40,8 @@ type
     FDevMod: Boolean;
     { TODO 1: Naming convention violation. It's not used .... check it }
     isDatabaseOK: Boolean;
-    { TODO 1: Variable is not used }
-    DragedIdx: Integer;
     { TODO 1: Meaningful name: AutoSizeBooksGroupBoxes }
     procedure ResizeGroupBox();
-    { TODO 1: Meaningful name. Check comments in the implementation }
-    procedure ValidateBook(jsRow: TJSONObject; email: string;
-      dtReported: TDateTime);
   public
     FDConnection1: TFDConnectionMock;
   end;
@@ -66,7 +55,7 @@ implementation
 
 uses
   System.StrUtils, System.Math, System.DateUtils,
-  System.RegularExpressions,
+  System.RegularExpressions, System.JSON,
   Frame.Welcome, Consts.Application, Utils.CipherAES128, Frame.Import,
   Utils.General, Data.Main, ClientAPI.Readers, ClientAPI.Books;
 
@@ -245,6 +234,16 @@ begin
   Result := EncodeDate(yy, mm, 1);
 end;
 
+// TODO 3: Move this procedure into class (idea)
+procedure ValidateReadersReport(jsRow: TJSONObject; email: string;
+  var dtReported: TDateTime);
+begin
+  if not CheckEmail(email) then
+    raise Exception.Create('Invalid email addres');
+  if not IsValidIsoDateUtc(jsRow, 'created', dtReported) then
+    raise Exception.Create('Invalid date. Expected ISO format');
+end;
+
 { TODO 2: [A] Method is too large. Comments is showing separate methods }
 procedure TForm1.btnImportClick(Sender: TObject);
 var
@@ -401,7 +400,7 @@ begin
       // Validate imported Reader report
       //
       { TODO 2: [E] Move validation up. Before reading data }
-      ValidateBook(jsRow, email, dtReported);
+      ValidateReadersReport(jsRow, email, dtReported);
       // ----------------------------------------------------------------
       //
       // Locate book by ISBN
@@ -547,15 +546,6 @@ begin
   lbxBooksReaded.Height := avaliable div 2;
 end;
 
-procedure TForm1.ValidateBook(jsRow: TJSONObject; email: string;
-  dtReported: TDateTime);
-begin
-  if not CheckEmail(email) then
-    raise Exception.Create('Invalid email addres');
-  if not IsValidIsoDateUtc(jsRow, 'created', dtReported) then
-    raise Exception.Create('Invalid date. Expected ISO format');
-end;
-
 procedure TForm1.Splitter1Moved(Sender: TObject);
 begin
   (Sender as TSplitter).Tag := 1;
@@ -570,14 +560,6 @@ var
   UserName: string;
   password: string;
   res: Variant;
-  i: Integer;
-  b: TBook;
-  o: Boolean;
-  AllBooks: TBookCollection;
-  OtherBooks: TBookCollection;
-  booksCfg: TBooksListBoxConfigurator;
-  datasrc: TDataSource;
-  DataGrid: TDBGrid;
 begin
   tmrAppReady.Enabled := False;
   if FDevMod then

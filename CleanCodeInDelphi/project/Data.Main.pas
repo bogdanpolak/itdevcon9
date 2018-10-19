@@ -126,13 +126,6 @@ procedure TDataModMain.OpenDataSets;
 var
   JSONFileName: string;
   fname: string;
-  days: integer;
-  half: Int64;
-  ms: TMemoryStream;
-  tab: TFDMemTable;
-  j: integer;
-  recNo: integer;
-  email: string;
 begin
   { TODO 2: Repeated code. Violation of the DRY rule }
   // ----------------------------------------------------------
