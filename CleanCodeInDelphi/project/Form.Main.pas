@@ -554,6 +554,8 @@ var
   UserName: string;
   password: string;
   res: Variant;
+  datasrc: TDataSource;
+  DataGrid: TDBGrid;
 begin
   tmrAppReady.Enabled := False;
   if FDevMod then
@@ -641,9 +643,9 @@ begin
   // ----------------------------`------------------------------
   //
   // Create Books Grid for Quality Tests
-  { TODO 1: Commented out function. It's usefull. Define global variable }
-  {
-  if FDevMod then
+  //
+  { TODO 2: [H] Extract method. See comments }
+  if FDevMod and InInternalQualityMode then
   begin
     datasrc := TDataSource.Create(frm);
     DataGrid := TDBGrid.Create(frm);
@@ -654,7 +656,6 @@ begin
     datasrc.DataSet := DataModMain.mtabBooks;
     AutoSizeColumns(DataGrid);
   end;
-  }
 end;
 
 end.

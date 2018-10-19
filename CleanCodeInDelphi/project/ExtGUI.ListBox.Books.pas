@@ -68,8 +68,6 @@ implementation
 uses
   DataAccess.Books.FireDAC, Data.Main;
 
-const
-
 constructor TBooksListBoxConfigurator.Create(AOwner: TComponent);
 var
   b: TBook;
