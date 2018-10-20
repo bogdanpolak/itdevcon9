@@ -65,7 +65,7 @@ uses
   System.RegularExpressions, System.JSON,
   Frame.Welcome, Consts.Application, Utils.CipherAES128, Frame.Import,
   Utils.General, Data.Main, ClientAPI.Readers, ClientAPI.Books, Consts.SQL,
-  Helper.TJSONObject;
+  Helper.TJSONObject, Helper.TDataSet;
 
 const
   SecureKey = 'delphi-is-the-best';
@@ -375,8 +375,7 @@ function TForm1.InsertReader(const firstName: string; const lastName: string;
 var
   ReaderId: integer;
 begin
-  ReaderId := DataModMain.GetMaxValueInDataSet(DataModMain.mtabReaders,
-    'ReaderId') + 1;
+  ReaderId := DataModMain.mtabReaders.GetMaxIntegerValue('ReaderId') + 1;
   //
   // Fields: ReaderId, FirstName, LastName, Email, Company, BooksRead,
   // LastReport, ReadersCreated
