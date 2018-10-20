@@ -65,7 +65,7 @@ uses
   System.RegularExpressions, System.JSON,
   Frame.Welcome, Consts.Application, Utils.CipherAES128, Frame.Import,
   Utils.General, Data.Main, ClientAPI.Readers, ClientAPI.Books, Consts.SQL,
-  Helper.TJSONObject, Helper.TDataSet;
+  Helper.TJSONObject, Helper.TDataSet, Helper.DBGrid;
 
 const
   SecureKey = 'delphi-is-the-best';
@@ -125,57 +125,6 @@ begin
     end;
   end;
   Result := sumHeight;
-end;
-
-{ TODO 2: [Helper] Extract into TDBGrid.ForEachRow class helper }
-function AutoSizeColumns(DBGrid: TDBGrid; const MaxRows: integer = 25): integer;
-var
-  DataSet: TDataSet;
-  Bookmark: TBookmark;
-  Count, i: integer;
-  ColumnsWidth: array of integer;
-begin
-  SetLength(ColumnsWidth, DBGrid.Columns.Count);
-  for i := 0 to DBGrid.Columns.Count - 1 do
-    if DBGrid.Columns[i].Visible then
-      ColumnsWidth[i] := DBGrid.Canvas.TextWidth
-        (DBGrid.Columns[i].Title.Caption + '   ')
-    else
-      ColumnsWidth[i] := 0;
-  if DBGrid.DataSource <> nil then
-    DataSet := DBGrid.DataSource.DataSet
-  else
-    DataSet := nil;
-  if (DataSet <> nil) and DataSet.Active then
-  begin
-    Bookmark := DataSet.GetBookmark;
-    DataSet.DisableControls;
-    try
-      Count := 0;
-      DataSet.First;
-      while not DataSet.Eof and (Count < MaxRows) do
-      begin
-        for i := 0 to DBGrid.Columns.Count - 1 do
-          if DBGrid.Columns[i].Visible then
-            ColumnsWidth[i] := Max(ColumnsWidth[i],
-              DBGrid.Canvas.TextWidth(DBGrid.Columns[i].Field.Text + '   '));
-        Inc(Count);
-        DataSet.Next;
-      end;
-    finally
-      DataSet.GotoBookmark(Bookmark);
-      DataSet.FreeBookmark(Bookmark);
-      DataSet.EnableControls;
-    end;
-  end;
-  Count := 0;
-  for i := 0 to DBGrid.Columns.Count - 1 do
-    if DBGrid.Columns[i].Visible then
-    begin
-      DBGrid.Columns[i].Width := ColumnsWidth[i];
-      Inc(Count, ColumnsWidth[i]);
-    end;
-  Result := Count - DBGrid.ClientWidth;
 end;
 
 { TODO 2: [Helper] TJSONObject Class helpper and this method has two responsibilities }
@@ -409,7 +358,7 @@ begin
   DBGrid1.Align := alClient;
   DBGrid1.DataSource := DataSrc1;
   DataSrc1.DataSet := DataModMain.mtabReaders;
-  AutoSizeColumns(DBGrid1);
+  DBGrid1.AutoSizeColumns();
   // ----------------------------------------------------------------
   with TSplitter.Create(frm) do
   begin
@@ -427,7 +376,7 @@ begin
   DBGrid2.DataSource := DataSrc2;
   DataSrc2.DataSet := DataModMain.mtabReports;
   DBGrid2.Margins.Top := 0;
-  AutoSizeColumns(DBGrid2);
+  DBGrid2.AutoSizeColumns();
 end;
 
 procedure TForm1.ChromeTabs1ButtonCloseTabClick(Sender: TObject;
@@ -542,7 +491,7 @@ begin
   DataGrid.Align := GridAlign;
   DataGrid.DataSource := datasrc;
   datasrc.DataSet := DataModMain.mtabBooks;
-  AutoSizeColumns(DataGrid);
+  DataGrid.AutoSizeColumns();
 end;
 
 procedure TForm1.tmrAppReadyTimer(Sender: TObject);

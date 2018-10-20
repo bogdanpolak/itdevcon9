@@ -25,7 +25,8 @@ uses
   Scripts.Readers in 'experimental\Scripts.Readers.pas',
   Consts.SQL in 'Consts.SQL.pas',
   Helper.TJSONObject in 'Helper.TJSONObject.pas',
-  Helper.TDataSet in 'Helper.TDataSet.pas';
+  Helper.TDataSet in 'Helper.TDataSet.pas',
+  Helper.DBGrid in 'Helper.DBGrid.pas';
 
 {$R *.res}
 
