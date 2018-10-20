@@ -38,7 +38,6 @@ type
     procedure tmrAppReadyTimer(Sender: TObject);
   private
     FBooksConfig: TBooksListBoxConfigurator;
-    FApplicationInDeveloperMode: Boolean;
     procedure AutoSizeBooksGroupBoxes();
     procedure NewBooks_LoadFromWebServiceAndInsert;
     function CreateAndShowFrame(FrameClass: TFrameClass;
@@ -65,7 +64,7 @@ uses
   System.RegularExpressions, System.JSON,
   Frame.Welcome, Consts.Application, Utils.CipherAES128, Frame.Import,
   Utils.General, Data.Main, ClientAPI.Readers, ClientAPI.Books, Consts.SQL,
-  Helper.TJSONObject, Helper.TDataSet, Helper.DBGrid;
+  Helper.TJSONObject, Helper.TDataSet, Helper.DBGrid, Helper.Application;
 
 const
   SecureKey = 'delphi-is-the-best';
@@ -298,11 +297,11 @@ begin
       DataModMain.mtabReports.AppendRecord([ReaderId, bookISBN, rating,
         oppinion, dtReported]);
       // ----------------------------------------------------------------
-      if FApplicationInDeveloperMode then
+      if Application.InDeveloperMode then
         Insert([rating.ToString], ss, maxInt);
     end;
     // ----------------------------------------------------------------
-    if FApplicationInDeveloperMode then
+    if Application.InDeveloperMode then
       Caption := String.Join(' ,', ss);
   finally
     jsReports.Free;
@@ -405,29 +404,7 @@ begin
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
-var
-  Extention: string;
-  ExeName: string;
-  ProjectFileName: string;
 begin
-  // ----------------------------------------------------------
-  // Check: If we are in developer mode
-  //
-  // Developer mode id used to change application configuration
-  // during test
-  { TODO 2: [Helper] TApplication.IsDeveloperMode }
-{$IFDEF DEBUG}
-  Extention := '.dpr';
-  ExeName := ExtractFileName(Application.ExeName);
-  ProjectFileName := ChangeFileExt(ExeName, Extention);
-  FApplicationInDeveloperMode := FileExists(ProjectFileName) or
-    FileExists('..\..\' + ProjectFileName);
-{$ELSE}
-  // To rename attribute (variable in the object) FDevMod I'm using buiid in
-  // IDE refactoring which is great, but be aware:
-  // Refactoring [Rename Variable] can't find this place :-(
-  FDevMod := False;
-{$ENDIF}
   pnMain.Caption := '';
 end;
 
@@ -504,7 +481,7 @@ var
   res: Variant;
 begin
   tmrAppReady.Enabled := False;
-  if FApplicationInDeveloperMode then
+  if Application.InDeveloperMode then
     ReportMemoryLeaksOnShutdown := True;
   frm := CreateAndShowFrame(TFrameWelcome, 'Welcome') as TFrameWelcome;
   // ----------------------------------------------------------
@@ -571,7 +548,7 @@ begin
   FBooksConfig := TBooksListBoxConfigurator.Create(self);
   FBooksConfig.PrepareListBoxes(lbxBooksReaded, lbxBooksAvaliable2);
   // ----------------------------------------------------------
-  if FApplicationInDeveloperMode and InInternalQualityMode then
+  if Application.InDeveloperMode and InInternalQualityMode then
     CreateBooksGridOnFrame(frm);
 end;
 
