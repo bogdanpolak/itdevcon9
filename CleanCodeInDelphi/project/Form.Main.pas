@@ -48,6 +48,7 @@ type
     function InsertReader(const firstName: string; const lastName: string;
       const email: string; const company: string;
       const dtReported: TDateTime): integer;
+    procedure CreateBooksGridOnFrame(frm: TFrame; GridAlign: TAlign = alClient);
   public
     FDConnection1: TFDConnectionMock;
   end;
@@ -529,6 +530,22 @@ begin
   (Sender as TSplitter).Tag := 1;
 end;
 
+procedure TForm1.CreateBooksGridOnFrame(frm: TFrame;
+  GridAlign: TAlign = alClient);
+var
+  datasrc: TDataSource;
+  DataGrid: TDBGrid;
+begin
+  datasrc := TDataSource.Create(frm);
+  DataGrid := TDBGrid.Create(frm);
+  DataGrid.AlignWithMargins := True;
+  DataGrid.Parent := frm;
+  DataGrid.Align := GridAlign;
+  DataGrid.DataSource := datasrc;
+  datasrc.DataSet := DataModMain.mtabBooks;
+  AutoSizeColumns(DataGrid);
+end;
+
 procedure TForm1.tmrAppReadyTimer(Sender: TObject);
 var
   frm: TFrameWelcome;
@@ -537,8 +554,6 @@ var
   UserName: string;
   password: string;
   res: Variant;
-  datasrc: TDataSource;
-  DataGrid: TDBGrid;
 begin
   tmrAppReady.Enabled := False;
   if FApplicationInDeveloperMode then
@@ -608,22 +623,8 @@ begin
   FBooksConfig := TBooksListBoxConfigurator.Create(self);
   FBooksConfig.PrepareListBoxes(lbxBooksReaded, lbxBooksAvaliable2);
   // ----------------------------------------------------------
-  // ----------------------------`------------------------------
-  //
-  // Create Books Grid for Quality Tests
-  //
-  { TODO 2: [H] Extract method. See comments }
   if FApplicationInDeveloperMode and InInternalQualityMode then
-  begin
-    datasrc := TDataSource.Create(frm);
-    DataGrid := TDBGrid.Create(frm);
-    DataGrid.AlignWithMargins := True;
-    DataGrid.Parent := frm;
-    DataGrid.Align := alClient;
-    DataGrid.DataSource := datasrc;
-    datasrc.DataSet := DataModMain.mtabBooks;
-    AutoSizeColumns(DataGrid);
-  end;
+    CreateBooksGridOnFrame(frm);
 end;
 
 end.
