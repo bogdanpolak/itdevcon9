@@ -44,6 +44,7 @@ type
     function CreateAndShowFrame(FrameClass: TFrameClass;
       const Title: string): TFrame;
     procedure ReaderReports_LoadFromWebServiceAndValidateAndInsert();
+    procedure LocateBookByISBN(const bookISBN: string);
   public
     FDConnection1: TFDConnectionMock;
   end;
@@ -79,6 +80,7 @@ resourcestring
   SDBErrorSelect = 'Can''t execute SELECT command on the database';
   StrNotSupportedDBVersion = 'Not supported database version. Please' +
     ' update database structures.';
+  StrBookIsbnNotFound = 'Book ISBN: %s not found in the database';
 
 function DBVersionToString(VerDB: Integer): string;
 begin
@@ -297,7 +299,6 @@ var
   bookTitle: string;
   rating: Integer;
   oppinion: string;
-  Book: TBook;
   ReaderId: Variant;
   ss: array of string;
 begin
@@ -329,15 +330,7 @@ begin
       rating := -1;
       jsReport.TryGetValue<Integer>(rating);
       // ----------------------------------------------------------------
-      //
-      // Locate book by ISBN
-      //
-      { TODO 2: [G] Extract method }
-      Book := FBooksConfig.GetBookList(blkAll).FindByISBN(bookISBN);
-      if not Assigned(Book) then
-        raise Exception.Create('Invalid book isbn');
-      // ----------------------------------------------------------------
-      // Find the Reader in then database using an email address
+      LocateBookByISBN(bookISBN);
       ReaderId := DataModMain.FindReaderByEmil(email);
       // ----------------------------------------------------------------
       //
@@ -371,6 +364,15 @@ begin
   finally
     jsReports.Free;
   end;
+end;
+
+procedure TForm1.LocateBookByISBN(const bookISBN: string);
+var
+  Book: TBook;
+begin
+  Book := FBooksConfig.GetBookList(blkAll).FindByISBN(bookISBN);
+  if not Assigned(Book) then
+    raise Exception.Create(Format(StrBookIsbnNotFound,[bookISBN]));
 end;
 
 procedure TForm1.btnImportClick(Sender: TObject);
