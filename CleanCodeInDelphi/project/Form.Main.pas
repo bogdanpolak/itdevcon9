@@ -40,9 +40,10 @@ type
     FBooksConfig: TBooksListBoxConfigurator;
     FApplicationInDeveloperMode: Boolean;
     procedure AutoSizeBooksGroupBoxes();
-    procedure ImportNewBooksFromOpenAPI;
+    procedure NewBooks_LoadFromWebServiceAndInsert;
     function CreateAndShowFrame(FrameClass: TFrameClass;
       const Title: string): TFrame;
+    procedure ReaderReports_LoadFromWebServiceAndValidateAndInsert();
   public
     FDConnection1: TFDConnectionMock;
   end;
@@ -236,7 +237,7 @@ begin
 end;
 
 // TODO 3: Move this procedure into class (idea)
-procedure ValidateReadersReport(jsRow: TJSONObject; email: string;
+procedure ValidateReport(jsRow: TJSONObject; email: string;
   var dtReported: TDateTime);
 begin
   if not CheckEmail(email) then
@@ -245,19 +246,61 @@ begin
     raise Exception.Create('Invalid date. Expected ISO format');
 end;
 
-{ TODO 2: [A] Method is too large. Comments is showing separate methods }
-procedure TForm1.btnImportClick(Sender: TObject);
+procedure TForm1.NewBooks_LoadFromWebServiceAndInsert;
 var
-  frm: TFrameImport;
-  tab: TChromeTab;
-  jsData: TJSONArray;
-  DBGrid1: TDBGrid;
-  DataSrc1: TDataSource;
-  DBGrid2: TDBGrid;
-  DataSrc2: TDataSource;
+  jsBooks: TJSONArray;
+  jsBook: TJSONObject;
   i: Integer;
-  jsRow: TJSONObject;
+  TextBookReleseDate: string;
+  b2: TBook;
+  b: TBook;
+begin
+  { TODO 3: Two responsibilities in one method. Needs to be separated }
+  // 1) Load new books for Web Service
+  // 2) Import books form JSON
+  // ** 3) Inserting books into DB table :-)
+  jsBooks := ImportBooksFromWebService(Client_API_Token);
+  try
+    for i := 0 to jsBooks.Count - 1 do
+    begin
+      jsBook := jsBooks.Items[i] as TJSONObject;
+      b := TBook.Create;
+      b.status := jsBook.Values['status'].Value;
+      b.Title := jsBook.Values['title'].Value;
+      b.isbn := jsBook.Values['isbn'].Value;
+      b.author := jsBook.Values['author'].Value;
+      TextBookReleseDate := jsBook.Values['date'].Value;
+      b.releseDate := BooksToDateTime(TextBookReleseDate);
+      b.pages := (jsBook.Values['pages'] as TJSONNumber).AsInt;
+      b.price := StrToCurr(jsBook.Values['price'].Value);
+      b.currency := jsBook.Values['currency'].Value;
+      b.description := jsBook.Values['description'].Value;
+      b.imported := Now;
+      b2 := FBooksConfig.GetBookList(blkAll).FindByISBN(b.isbn);
+      if not Assigned(b2) then
+      begin
+        FBooksConfig.InsertNewBook(b);
+        // ----------------------------------------------------------------
+        // Append report into the database:
+        // Fields: ISBN, Title, Authors, Status, ReleseDate, Pages, Price,
+        // Currency, Imported, Description
+        DataModMain.mtabBooks.InsertRecord([b.isbn, b.Title, b.author, b.status,
+          b.releseDate, b.pages, b.price, b.currency, b.imported,
+          b.description]);
+      end;
+    end;
+  finally
+    jsBooks.Free;
+  end;
+end;
+
+procedure TForm1.ReaderReports_LoadFromWebServiceAndValidateAndInsert();
+var
+  jsReports: TJSONArray;
+  i: Integer;
+  jsReport: TJSONObject;
   email: string;
+  dtReported: TDateTime;
   firstName: string;
   lastName: string;
   company: string;
@@ -265,94 +308,83 @@ var
   bookTitle: string;
   rating: Integer;
   oppinion: string;
+  Book: TBook;
+  ReaderId: Variant;
   ss: array of string;
-  v: string;
-  dtReported: TDateTime;
-  readerId: Variant;
-  b: TBook;
 begin
-  ImportNewBooksFromOpenAPI;
-  frm := CreateAndShowFrame(TFrameImport, 'Readers Report') as TFrameImport;
-  // ----------------------------------------------------------
-  // ----------------------------------------------------------
-  //
-  // Import new Reader Reports data from OpenAPI
-  // - Load JSON from WebService
-  // - Validate JSON and insert new a Readers into the Database
-  //
-  jsData := ImportReaderReportsFromWebService(Client_API_Token);
-  { TODO 2: [D] Extract method. Block try-catch is separate responsibility }
+  jsReports := ImportReaderReportsFromWebService(Client_API_Token);
   try
-    for i := 0 to jsData.Count - 1 do
+    for i := 0 to jsReports.Count - 1 do
     begin
       { TODO 3: [A] Extract Reader Report code into the record TReaderReport (model layer) }
-      { TODO 2: [F] Repeated code. Violation of the DRY rule }
-      // Use TJSONObject helper Values return Variant.Null
+      // ----------------------------------------------------------------
+      jsReport := jsReports.Items[i] as TJSONObject;
+      email := jsReport.Values['email'].Value;
+      // ----------------------------------------------------------------
+      //
+      // Validate imported Reader report
+      //
+      { TODO 2: email is not required as an parameter. Remove it latter }
+      ValidateReport(jsReport, email, dtReported);
       // ----------------------------------------------------------------
       //
       // Read JSON object
       //
       { TODO 3: [A] Move this code into record TReaderReport.LoadFromJSON }
-      jsRow := jsData.Items[i] as TJSONObject;
-      email := jsRow.Values['email'].Value;
-      if fieldAvaliable(jsRow, 'firstname') then
-        firstName := jsRow.Values['firstname'].Value
+      { TODO 2: [F] Repeated code. Violation of the DRY rule }
+      // Use TJSONObject helper Values return Variant.Null
+      if fieldAvaliable(jsReport, 'firstname') then
+        firstName := jsReport.Values['firstname'].Value
       else
         firstName := '';
-      if fieldAvaliable(jsRow, 'lastname') then
-        lastName := jsRow.Values['lastname'].Value
+      if fieldAvaliable(jsReport, 'lastname') then
+        lastName := jsReport.Values['lastname'].Value
       else
         lastName := '';
-      if fieldAvaliable(jsRow, 'company') then
-        company := jsRow.Values['company'].Value
+      if fieldAvaliable(jsReport, 'company') then
+        company := jsReport.Values['company'].Value
       else
         company := '';
-      if fieldAvaliable(jsRow, 'book-isbn') then
-        bookISBN := jsRow.Values['book-isbn'].Value
+      if fieldAvaliable(jsReport, 'book-isbn') then
+        bookISBN := jsReport.Values['book-isbn'].Value
       else
         bookISBN := '';
-      if fieldAvaliable(jsRow, 'book-title') then
-        bookTitle := jsRow.Values['book-title'].Value
+      if fieldAvaliable(jsReport, 'book-title') then
+        bookTitle := jsReport.Values['book-title'].Value
       else
         bookTitle := '';
-      if fieldAvaliable(jsRow, 'rating') then
-        rating := (jsRow.Values['rating'] as TJSONNumber).AsInt
+      if fieldAvaliable(jsReport, 'rating') then
+        rating := (jsReport.Values['rating'] as TJSONNumber).AsInt
       else
         rating := -1;
-      if fieldAvaliable(jsRow, 'oppinion') then
-        oppinion := jsRow.Values['oppinion'].Value
+      if fieldAvaliable(jsReport, 'oppinion') then
+        oppinion := jsReport.Values['oppinion'].Value
       else
         oppinion := '';
-      // ----------------------------------------------------------------
-      //
-      // Validate imported Reader report
-      //
-      { TODO 2: [E] Move validation up. Before reading data }
-      ValidateReadersReport(jsRow, email, dtReported);
       // ----------------------------------------------------------------
       //
       // Locate book by ISBN
       //
       { TODO 2: [G] Extract method }
-      b := FBooksConfig.GetBookList(blkAll).FindByISBN(bookISBN);
-      if not Assigned(b) then
+      Book := FBooksConfig.GetBookList(blkAll).FindByISBN(bookISBN);
+      if not Assigned(Book) then
         raise Exception.Create('Invalid book isbn');
       // ----------------------------------------------------------------
       // Find the Reader in then database using an email address
-      readerId := DataModMain.FindReaderByEmil(email);
+      ReaderId := DataModMain.FindReaderByEmil(email);
       // ----------------------------------------------------------------
       //
       // Append a new reader into the database if requred:
-      if VarIsNull(readerId) then
+      if VarIsNull(ReaderId) then
       begin
         { TODO 2: [G] Extract method }
-        readerId := DataModMain.GetMaxValueInDataSet(DataModMain.mtabReaders,
+        ReaderId := DataModMain.GetMaxValueInDataSet(DataModMain.mtabReaders,
           'ReaderId') + 1;
         //
         // Fields: ReaderId, FirstName, LastName, Email, Company, BooksRead,
         // LastReport, ReadersCreated
         //
-        DataModMain.mtabReaders.AppendRecord([readerId, firstName, lastName,
+        DataModMain.mtabReaders.AppendRecord([ReaderId, firstName, lastName,
           email, company, 1, dtReported, Now()]);
       end;
       // ----------------------------------------------------------------
@@ -360,7 +392,7 @@ begin
       // Append report into the database:
       // Fields: ReaderId, ISBN, Rating, Oppinion, Reported
       //
-      DataModMain.mtabReports.AppendRecord([readerId, bookISBN, rating,
+      DataModMain.mtabReports.AppendRecord([ReaderId, bookISBN, rating,
         oppinion, dtReported]);
       // ----------------------------------------------------------------
       if FApplicationInDeveloperMode then
@@ -370,14 +402,28 @@ begin
     if FApplicationInDeveloperMode then
       Caption := String.Join(' ,', ss);
   finally
-    jsData.Free;
+    jsReports.Free;
   end;
+end;
+
+procedure TForm1.btnImportClick(Sender: TObject);
+var
+  frm: TFrameImport;
+  tab: TChromeTab;
+  DBGrid1: TDBGrid;
+  DataSrc1: TDataSource;
+  DBGrid2: TDBGrid;
+  DataSrc2: TDataSource;
+begin
+  NewBooks_LoadFromWebServiceAndInsert;
+  frm := CreateAndShowFrame(TFrameImport, 'Readers Report') as TFrameImport;
+  ReaderReports_LoadFromWebServiceAndValidateAndInsert();
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
   // Dynamically Add TDBGrid to TFrameImport
   //
-  { TODO: Move this GUI creation into TFrameImport }
+  { TODO 2: Move this GUI creation into TFrameImport }
   DataSrc1 := TDataSource.Create(frm);
   DBGrid1 := TDBGrid.Create(frm);
   DBGrid1.AlignWithMargins := True;
@@ -482,54 +528,6 @@ begin
     avaliable := avaliable - lbxBooksAvaliable2.Margins.Top -
       lbxBooksAvaliable2.Margins.Bottom;
   lbxBooksReaded.Height := avaliable div 2;
-end;
-
-procedure TForm1.ImportNewBooksFromOpenAPI;
-var
-  jsBooks: TJSONArray;
-  jsBook: TJSONObject;
-  i: Integer;
-  TextBookReleseDate: string;
-  b2: TBook;
-  b: TBook;
-begin
-  { TODO 3: Two responsibilities in one method. Needs to be separated }
-  // 1) Load new books for Web Service
-  // 2) Import books form JSON
-  // ** 3) Inserting books into DB table :-)
-  jsBooks := ImportBooksFromWebService(Client_API_Token);
-  try
-    for i := 0 to jsBooks.Count - 1 do
-    begin
-      jsBook := jsBooks.Items[i] as TJSONObject;
-      b := TBook.Create;
-      b.status := jsBook.Values['status'].Value;
-      b.Title := jsBook.Values['title'].Value;
-      b.isbn := jsBook.Values['isbn'].Value;
-      b.author := jsBook.Values['author'].Value;
-      TextBookReleseDate := jsBook.Values['date'].Value;
-      b.releseDate := BooksToDateTime(TextBookReleseDate);
-      b.pages := (jsBook.Values['pages'] as TJSONNumber).AsInt;
-      b.price := StrToCurr(jsBook.Values['price'].Value);
-      b.currency := jsBook.Values['currency'].Value;
-      b.description := jsBook.Values['description'].Value;
-      b.imported := Now;
-      b2 := FBooksConfig.GetBookList(blkAll).FindByISBN(b.isbn);
-      if not Assigned(b2) then
-      begin
-        FBooksConfig.InsertNewBook(b);
-        // ----------------------------------------------------------------
-        // Append report into the database:
-        // Fields: ISBN, Title, Authors, Status, ReleseDate, Pages, Price,
-        // Currency, Imported, Description
-        DataModMain.mtabBooks.InsertRecord([b.isbn, b.Title, b.author, b.status,
-          b.releseDate, b.pages, b.price, b.currency, b.imported,
-          b.description]);
-      end;
-    end;
-  finally
-    jsBooks.Free;
-  end;
 end;
 
 function TForm1.CreateAndShowFrame(FrameClass: TFrameClass;
