@@ -45,6 +45,9 @@ type
       const Title: string): TFrame;
     procedure ReaderReports_LoadFromWebServiceAndValidateAndInsert();
     procedure LocateBookByISBN(const bookISBN: string);
+    function InsertReader(const firstName: string; const lastName: string;
+      const email: string; const company: string;
+      const dtReported: TDateTime): integer;
   public
     FDConnection1: TFDConnectionMock;
   end;
@@ -82,7 +85,7 @@ resourcestring
     ' update database structures.';
   StrBookIsbnNotFound = 'Book ISBN: %s not found in the database';
 
-function DBVersionToString(VerDB: Integer): string;
+function DBVersionToString(VerDB: integer): string;
 begin
   Result := (VerDB div 1000).ToString + '.' + (VerDB mod 1000).ToString;
 end;
@@ -94,14 +97,14 @@ end;
 
 { TODO 2: [Helper] TWinControl class helper }
 function SumHeightForChildrens(Parent: TWinControl;
-  ControlsToExclude: TArray<TControl>): Integer;
+  ControlsToExclude: TArray<TControl>): integer;
 var
-  i: Integer;
+  i: integer;
   ctrl: Vcl.Controls.TControl;
   isExcluded: Boolean;
-  j: Integer;
-  sumHeight: Integer;
-  ctrlHeight: Integer;
+  j: integer;
+  sumHeight: integer;
+  ctrlHeight: integer;
 begin
   sumHeight := 0;
   for i := 0 to Parent.ControlCount - 1 do
@@ -124,12 +127,12 @@ begin
 end;
 
 { TODO 2: [Helper] Extract into TDBGrid.ForEachRow class helper }
-function AutoSizeColumns(DBGrid: TDBGrid; const MaxRows: Integer = 25): Integer;
+function AutoSizeColumns(DBGrid: TDBGrid; const MaxRows: integer = 25): integer;
 var
   DataSet: TDataSet;
   Bookmark: TBookmark;
-  Count, i: Integer;
-  ColumnsWidth: array of Integer;
+  Count, i: integer;
+  ColumnsWidth: array of integer;
 begin
   SetLength(ColumnsWidth, DBGrid.Columns.Count);
   for i := 0 to DBGrid.Columns.Count - 1 do
@@ -211,9 +214,9 @@ const
 var
   m: string;
   y: string;
-  i: Integer;
-  mm: Integer;
-  yy: Integer;
+  i: integer;
+  mm: integer;
+  yy: integer;
 begin
   m := s.Substring(0, 3);
   y := s.Substring(4);
@@ -241,7 +244,7 @@ procedure TForm1.NewBooks_LoadFromWebServiceAndInsert;
 var
   jsBooks: TJSONArray;
   jsBook: TJSONObject;
-  i: Integer;
+  i: integer;
   TextBookReleseDate: string;
   b2: TBook;
   b: TBook;
@@ -288,7 +291,7 @@ end;
 procedure TForm1.ReaderReports_LoadFromWebServiceAndValidateAndInsert();
 var
   jsReports: TJSONArray;
-  i: Integer;
+  i: integer;
   jsReport: TJSONObject;
   email: string;
   dtReported: TDateTime;
@@ -297,7 +300,7 @@ var
   company: string;
   bookISBN: string;
   bookTitle: string;
-  rating: Integer;
+  rating: integer;
   oppinion: string;
   ReaderId: Variant;
   ss: array of string;
@@ -327,26 +330,16 @@ begin
       bookISBN := VarToStr(jsReport.ValuesEx['book-isbn']);
       bookTitle := VarToStr(jsReport.ValuesEx['book-title']);
       oppinion := VarToStr(jsReport.ValuesEx['oppinion']);
-      rating := -1;
-      jsReport.TryGetValue<Integer>(rating);
+      if jsReport.FieldHasNotNullValue('rating') then
+        rating := jsReport.Values['rating'].GetValue<integer>()
+      else
+        rating := -1;
       // ----------------------------------------------------------------
       LocateBookByISBN(bookISBN);
       ReaderId := DataModMain.FindReaderByEmil(email);
-      // ----------------------------------------------------------------
-      //
-      // Append a new reader into the database if requred:
       if VarIsNull(ReaderId) then
-      begin
-        { TODO 2: [G] Extract method }
-        ReaderId := DataModMain.GetMaxValueInDataSet(DataModMain.mtabReaders,
-          'ReaderId') + 1;
-        //
-        // Fields: ReaderId, FirstName, LastName, Email, Company, BooksRead,
-        // LastReport, ReadersCreated
-        //
-        DataModMain.mtabReaders.AppendRecord([ReaderId, firstName, lastName,
-          email, company, 1, dtReported, Now()]);
-      end;
+        ReaderId := InsertReader(firstName, lastName, email, company,
+          dtReported);
       // ----------------------------------------------------------------
       //
       // Append report into the database:
@@ -372,7 +365,23 @@ var
 begin
   Book := FBooksConfig.GetBookList(blkAll).FindByISBN(bookISBN);
   if not Assigned(Book) then
-    raise Exception.Create(Format(StrBookIsbnNotFound,[bookISBN]));
+    raise Exception.Create(Format(StrBookIsbnNotFound, [bookISBN]));
+end;
+
+function TForm1.InsertReader(const firstName: string; const lastName: string;
+  const email: string; const company: string;
+  const dtReported: TDateTime): integer;
+var
+  ReaderId: integer;
+begin
+  ReaderId := DataModMain.GetMaxValueInDataSet(DataModMain.mtabReaders,
+    'ReaderId') + 1;
+  //
+  // Fields: ReaderId, FirstName, LastName, Email, Company, BooksRead,
+  // LastReport, ReadersCreated
+  //
+  DataModMain.mtabReaders.AppendRecord([ReaderId, firstName, lastName, email,
+    company, 1, dtReported, Now]);
 end;
 
 procedure TForm1.btnImportClick(Sender: TObject);
@@ -475,9 +484,9 @@ end;
 
 procedure TForm1.AutoSizeBooksGroupBoxes();
 var
-  sum: Integer;
-  avaliable: Integer;
-  labelPixelHeight: Integer;
+  sum: integer;
+  avaliable: integer;
+  labelPixelHeight: integer;
 begin
   { TODO 3: Move into TBooksListBoxConfigurator }
   with TBitmap.Create do
@@ -523,7 +532,7 @@ end;
 procedure TForm1.tmrAppReadyTimer(Sender: TObject);
 var
   frm: TFrameWelcome;
-  VersionNr: Integer;
+  VersionNr: integer;
   msg1: string;
   UserName: string;
   password: string;
