@@ -23,7 +23,8 @@ uses
   DataAccess.Readers.FireDAC in 'experimental\DataAccess.Readers.FireDAC.pas',
   DataAccess.Readers in 'experimental\DataAccess.Readers.pas',
   Scripts.Readers in 'experimental\Scripts.Readers.pas',
-  Consts.SQL in 'Consts.SQL.pas';
+  Consts.SQL in 'Consts.SQL.pas',
+  Helper.TJSONObject in 'Helper.TJSONObject.pas';
 
 {$R *.res}
 

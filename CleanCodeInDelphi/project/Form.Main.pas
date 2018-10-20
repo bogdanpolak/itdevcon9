@@ -59,7 +59,8 @@ uses
   System.StrUtils, System.Math, System.DateUtils,
   System.RegularExpressions, System.JSON,
   Frame.Welcome, Consts.Application, Utils.CipherAES128, Frame.Import,
-  Utils.General, Data.Main, ClientAPI.Readers, ClientAPI.Books, Consts.SQL;
+  Utils.General, Data.Main, ClientAPI.Readers, ClientAPI.Books, Consts.SQL,
+  Helper.TJSONObject;
 
 const
   SecureKey = 'delphi-is-the-best';
@@ -169,18 +170,6 @@ begin
       Inc(Count, ColumnsWidth[i]);
     end;
   Result := Count - DBGrid.ClientWidth;
-end;
-
-// ----------------------------------------------------------
-//
-// Function checks is TJsonObject has field and this field has not null value
-//
-{ TODO 2: [Helper] TJSONObject Class helpper and more minigful name expected }
-function fieldAvaliable(jsObject: TJSONObject; const fieldName: string)
-  : Boolean; inline;
-begin
-  Result := Assigned(jsObject.Values[fieldName]) and not jsObject.Values
-    [fieldName].Null;
 end;
 
 { TODO 2: [Helper] TJSONObject Class helpper and this method has two responsibilities }
@@ -331,36 +320,14 @@ begin
       // Read JSON object
       //
       { TODO 3: [A] Move this code into record TReaderReport.LoadFromJSON }
-      { TODO 2: [F] Repeated code. Violation of the DRY rule }
-      // Use TJSONObject helper Values return Variant.Null
-      if fieldAvaliable(jsReport, 'firstname') then
-        firstName := jsReport.Values['firstname'].Value
-      else
-        firstName := '';
-      if fieldAvaliable(jsReport, 'lastname') then
-        lastName := jsReport.Values['lastname'].Value
-      else
-        lastName := '';
-      if fieldAvaliable(jsReport, 'company') then
-        company := jsReport.Values['company'].Value
-      else
-        company := '';
-      if fieldAvaliable(jsReport, 'book-isbn') then
-        bookISBN := jsReport.Values['book-isbn'].Value
-      else
-        bookISBN := '';
-      if fieldAvaliable(jsReport, 'book-title') then
-        bookTitle := jsReport.Values['book-title'].Value
-      else
-        bookTitle := '';
-      if fieldAvaliable(jsReport, 'rating') then
-        rating := (jsReport.Values['rating'] as TJSONNumber).AsInt
-      else
-        rating := -1;
-      if fieldAvaliable(jsReport, 'oppinion') then
-        oppinion := jsReport.Values['oppinion'].Value
-      else
-        oppinion := '';
+      firstName := VarToStr(jsReport.ValuesEx['firstname']);
+      lastName := VarToStr(jsReport.ValuesEx['lastname']);
+      company := VarToStr(jsReport.ValuesEx['company']);
+      bookISBN := VarToStr(jsReport.ValuesEx['book-isbn']);
+      bookTitle := VarToStr(jsReport.ValuesEx['book-title']);
+      oppinion := VarToStr(jsReport.ValuesEx['oppinion']);
+      rating := -1;
+      jsReport.TryGetValue<Integer>(rating);
       // ----------------------------------------------------------------
       //
       // Locate book by ISBN
