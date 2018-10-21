@@ -96,20 +96,6 @@ begin
   AutoSizeBooksGroupBoxes();
 end;
 
-{ TODO 2: Move into Utils.General }
-function CheckEmail(const s: string): Boolean;
-const
-  EMAIL_REGEX = '^((?>[a-zA-Z\d!#$%&''*+\-/=?^_`{|}~]+\x20*|"((?=[\x01-\x7f])' +
-    '[^"\\]|\\[\x01-\x7f])*"\x20*)*(?<angle><))?((?!\.)' +
-    '(?>\.?[a-zA-Z\d!#$%&''*+\-/=?^_`{|}~]+)+|"((?=[\x01-\x7f])' +
-    '[^"\\]|\\[\x01-\x7f])*")@(((?!-)[a-zA-Z\d\-]+(?<!-)\.)+[a-zA-Z]' +
-    '{2,}|\[(((?(?<!\[)\.)(25[0-5]|2[0-4]\d|[01]?\d?\d))' +
-    '{4}|[a-zA-Z\d\-]*[a-zA-Z\d]:((?=[\x01-\x7f])[^\\\[\]]|\\' +
-    '[\x01-\x7f])+)\])(?(angle)>)$';
-begin
-  Result := System.RegularExpressions.TRegEx.IsMatch(s, EMAIL_REGEX);
-end;
-
 function BooksToDateTime(const s: string): TDateTime;
 const
   months: array [1 .. 12] of string = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -288,46 +274,11 @@ procedure TForm1.btnImportClick(Sender: TObject);
 var
   frm: TFrameImport;
   tab: TChromeTab;
-  DBGrid1: TDBGrid;
-  DataSrc1: TDataSource;
-  DBGrid2: TDBGrid;
-  DataSrc2: TDataSource;
 begin
   NewBooks_LoadFromWebServiceAndInsert;
   frm := CreateAndShowFrame(TFrameImport, 'Readers Report') as TFrameImport;
   ReaderReports_LoadFromWebServiceAndValidateAndInsert();
-  // ----------------------------------------------------------
-  // ----------------------------------------------------------
-  //
-  // Dynamically Add TDBGrid to TFrameImport
-  //
-  { TODO 2: Move this GUI creation into TFrameImport }
-  DataSrc1 := TDataSource.Create(frm);
-  DBGrid1 := TDBGrid.Create(frm);
-  DBGrid1.AlignWithMargins := True;
-  DBGrid1.Parent := frm;
-  DBGrid1.Align := alClient;
-  DBGrid1.DataSource := DataSrc1;
-  DataSrc1.DataSet := DataModMain.mtabReaders;
-  DBGrid1.AutoSizeColumns();
-  // ----------------------------------------------------------------
-  with TSplitter.Create(frm) do
-  begin
-    Align := alBottom;
-    Parent := frm;
-    Height := 5;
-  end;
-  DBGrid1.Margins.Bottom := 0;
-  DataSrc2 := TDataSource.Create(frm);
-  DBGrid2 := TDBGrid.Create(frm);
-  DBGrid2.AlignWithMargins := True;
-  DBGrid2.Parent := frm;
-  DBGrid2.Align := alBottom;
-  DBGrid2.Height := frm.Height div 3;
-  DBGrid2.DataSource := DataSrc2;
-  DataSrc2.DataSet := DataModMain.mtabReports;
-  DBGrid2.Margins.Top := 0;
-  DBGrid2.AutoSizeColumns();
+  frm.BuildDBGridsForReadersAndReports();
 end;
 
 procedure TForm1.ChromeTabs1ButtonCloseTabClick(Sender: TObject;
