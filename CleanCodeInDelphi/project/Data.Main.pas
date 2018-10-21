@@ -46,6 +46,7 @@ type
     // ------------------------------------------------------
     FDStanStorageJSONLink1: TFDStanStorageJSONLink;
   private
+    procedure OpenMemDataSet(Dataset:TFDMemTable; const JsonFileName: string);
   public
     procedure OpenDataSets;
     function FindReaderByEmil (const email: string): Variant;
@@ -74,40 +75,24 @@ begin
     Result := System.Variants.Null()
 end;
 
-procedure TDataModMain.OpenDataSets;
+procedure TDataModMain.OpenMemDataSet(Dataset:TFDMemTable; 
+  const JsonFileName: string);
 var
-  JSONFileName: string;
   fname: string;
 begin
-  { TODO 2: Repeated code. Violation of the DRY rule }
-  // ----------------------------------------------------------
-  // ----------------------------------------------------------
-  //
-  // Load and open Readers table
-  JSONFileName := 'json\dbtable-readers.json';
   if FileExists(JSONFileName) then
     fname := JSONFileName
   else if FileExists('..\..\' + JSONFileName) then
     fname := '..\..\' + JSONFileName
   else
     raise Exception.Create('Error Message');
-  mtabReaders.LoadFromFile(fname, sfJSON);
-  // ----------------------------------------------------------
-  // ----------------------------------------------------------
-  //
-  // Load and open Books table
-  JSONFileName := 'json\dbtable-books.json';
-  if FileExists(JSONFileName) then
-    fname := JSONFileName
-  else if FileExists('..\..\' + JSONFileName) then
-    fname := '..\..\' + JSONFileName
-  else
-    raise Exception.Create('Error Message');
-  mtabBooks.LoadFromFile(fname, sfJSON);
-  // ----------------------------------------------------------
-  // ----------------------------------------------------------
-  //
-  // Repoerts table
+  Dataset.LoadFromFile(fname, sfJSON);
+end;
+
+procedure TDataModMain.OpenDataSets;
+begin
+  OpenMemDataSet('json\dbtable-readers.json', mtabReaders);
+  OpenMemDataSet('json\dbtable-books.json',mtabBooks);
   mtabReports.CreateDataSet;
 end;
 
