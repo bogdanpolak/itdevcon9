@@ -53,6 +53,7 @@ type
     procedure EventOnDrawItem(Control: TWinControl; Index: integer; Rect: TRect;
       State: TOwnerDrawState);
     procedure AddBookToProperListByStatus(b: TBook);
+    procedure SetupListBoxPropertiesAndEvents(lbx: TListBox);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -125,19 +126,9 @@ begin
   Result := FAllBooks.FindByISBN (isbn);
 end;
 
-procedure TBooksListBoxConfigurator.PrepareListBoxes(lbxOnShelf,
-  lbxAvaliable: TListBox);
-var
-  b: TBook;
+procedure TBooksListBoxConfigurator.SetupListBoxPropertiesAndEvents(
+  lbx: TListBox);
 begin
-  FListBoxOnShelf := lbxOnShelf;
-  FListBoxAvaliable := lbxAvaliable;
-  { TODO 2: Repeated code. Violation of the DRY rule }
-  // New private method: SetupListBox
-  // -----------------------------------------------------------------
-  // ListBox: books on the shelf
-  for b in FBooksOnShelf do
-    FListBoxOnShelf.AddItem(b.title, b);
   FListBoxOnShelf.OnDragDrop := EventOnDragDrop;
   FListBoxOnShelf.OnDragOver := EventOnDragOver;
   FListBoxOnShelf.OnStartDrag := EventOnStartDrag;
@@ -145,17 +136,21 @@ begin
   FListBoxOnShelf.Style := lbOwnerDrawFixed;
   FListBoxOnShelf.DragMode := dmAutomatic;
   FListBoxOnShelf.ItemHeight := 50;
-  // -----------------------------------------------------------------
-  // ListBox: books avaliable
+end;
+
+procedure TBooksListBoxConfigurator.PrepareListBoxes(lbxOnShelf,
+  lbxAvaliable: TListBox);
+var
+  b: TBook;
+begin
+  FListBoxOnShelf := lbxOnShelf;
+  FListBoxAvaliable := lbxAvaliable;
+  for b in FBooksOnShelf do
+    FListBoxOnShelf.AddItem(b.title, b);
   for b in FBooksAvaliable do
     FListBoxAvaliable.AddItem(b.title, b);
-  FListBoxAvaliable.OnDragDrop := EventOnDragDrop;
-  FListBoxAvaliable.OnDragOver := EventOnDragOver;
-  FListBoxAvaliable.OnStartDrag := EventOnStartDrag;
-  FListBoxAvaliable.OnDrawItem := EventOnDrawItem;
-  FListBoxAvaliable.Style := lbOwnerDrawFixed;
-  FListBoxAvaliable.DragMode := dmAutomatic;
-  FListBoxAvaliable.ItemHeight := 50;
+  SetupListBoxPropertiesAndEvents(FListBoxOnShelf);
+  SetupListBoxPropertiesAndEvents(FListBoxAvaliable);
 end;
 
 procedure TBooksListBoxConfigurator.EventOnStartDrag(Sender: TObject;
