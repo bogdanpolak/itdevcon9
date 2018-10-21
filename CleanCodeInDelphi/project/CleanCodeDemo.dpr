@@ -22,7 +22,13 @@ uses
   ExtGUI.ListBox.Books in 'ExtGUI.ListBox.Books.pas',
   DataAccess.Readers.FireDAC in 'experimental\DataAccess.Readers.FireDAC.pas',
   DataAccess.Readers in 'experimental\DataAccess.Readers.pas',
-  Scripts.Readers in 'experimental\Scripts.Readers.pas';
+  Scripts.Readers in 'experimental\Scripts.Readers.pas',
+  Consts.SQL in 'Consts.SQL.pas',
+  Helper.TJSONObject in 'Helper.TJSONObject.pas',
+  Helper.TDataSet in 'Helper.TDataSet.pas',
+  Helper.DBGrid in 'Helper.DBGrid.pas',
+  Helper.Application in 'Helper.Application.pas',
+  Helper.TWinControl in 'Helper.TWinControl.pas';
 
 {$R *.res}
 

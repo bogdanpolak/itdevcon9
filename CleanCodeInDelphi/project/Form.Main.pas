@@ -1,5 +1,4 @@
 ﻿unit Form.Main;
-{ TODO 1 : [0]  Check zero compiler warnings and hint }
 
 interface
 
@@ -9,16 +8,13 @@ uses
   Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Grids, Vcl.DBGrids, Data.DB,
   ChromeTabs, ChromeTabsClasses, ChromeTabsTypes,
   Fake.FDConnection,
-  {TODO 1: [0] Move System.JSON into implementation.}
-  // System.JSON is required because of method ValidateBook
-  // Change it into a public procedure and mark with TODO
-  // TODO 3 (colon) Move this procedure into class (idea)
-  System.JSON,
   {TODO 3: [D] Resolve dependency on ExtGUI.ListBox.Books. Too tightly coupled}
   // Dependency is requred by attribute TBooksListBoxConfigurator
   ExtGUI.ListBox.Books;
 
 type
+  TFrameClass = class of TFrame;
+
   TForm1 = class(TForm)
     GroupBox1: TGroupBox;
     lbBooksReaded: TLabel;
@@ -42,17 +38,16 @@ type
     procedure tmrAppReadyTimer(Sender: TObject);
   private
     FBooksConfig: TBooksListBoxConfigurator;
-    { TODO 1: Meanigfull name needed. If we are in developer mode }
-    FDevMod: Boolean;
-    { TODO 1: Naming convention violation. It's not used .... check it }
-    isDatabaseOK: Boolean;
-    { TODO 1: Variable is not used }
-    DragedIdx: Integer;
-    { TODO 1: Meaningful name: AutoSizeBooksGroupBoxes }
-    procedure ResizeGroupBox();
-    { TODO 1: Meaningful name. Check comments in the implementation }
-    procedure ValidateBook(jsRow: TJSONObject; email: string;
-      dtReported: TDateTime);
+    procedure AutoSizeBooksGroupBoxes();
+    procedure NewBooks_LoadFromWebServiceAndInsert;
+    function CreateAndShowFrame(FrameClass: TFrameClass;
+      const Title: string): TFrame;
+    procedure ReaderReports_LoadFromWebServiceAndValidateAndInsert();
+    procedure LocateBookByISBN(const bookISBN: string);
+    function InsertReader(const firstName: string; const lastName: string;
+      const email: string; const company: string;
+      const dtReported: TDateTime): integer;
+    procedure CreateBooksGridOnFrame(frm: TFrame; GridAlign: TAlign = alClient);
   public
     FDConnection1: TFDConnectionMock;
   end;
@@ -66,9 +61,11 @@ implementation
 
 uses
   System.StrUtils, System.Math, System.DateUtils,
-  System.RegularExpressions,
+  System.RegularExpressions, System.JSON,
   Frame.Welcome, Consts.Application, Utils.CipherAES128, Frame.Import,
-  Utils.General, Data.Main, ClientAPI.Readers, ClientAPI.Books;
+  Utils.General, Data.Main, ClientAPI.Readers, ClientAPI.Books, Consts.SQL,
+  Helper.TJSONObject, Helper.TDataSet, Helper.DBGrid, Helper.Application,
+  Helper.TWinControl;
 
 const
   SecureKey = 'delphi-is-the-best';
@@ -87,139 +84,16 @@ resourcestring
   SDBErrorSelect = 'Can''t execute SELECT command on the database';
   StrNotSupportedDBVersion = 'Not supported database version. Please' +
     ' update database structures.';
+  StrBookIsbnNotFound = 'Book ISBN: %s not found in the database';
 
-function DBVersionToString(VerDB: Integer): string;
+function DBVersionToString(VerDB: integer): string;
 begin
   Result := (VerDB div 1000).ToString + '.' + (VerDB mod 1000).ToString;
 end;
 
 procedure TForm1.FormResize(Sender: TObject);
 begin
-  ResizeGroupBox();
-end;
-
-{ TODO 2: [Helper] TWinControl class helper }
-function SumHeightForChildrens(Parent: TWinControl;
-  ControlsToExclude: TArray<TControl>): Integer;
-var
-  i: Integer;
-  ctrl: Vcl.Controls.TControl;
-  isExcluded: Boolean;
-  j: Integer;
-  sumHeight: Integer;
-  ctrlHeight: Integer;
-begin
-  sumHeight := 0;
-  for i := 0 to Parent.ControlCount - 1 do
-  begin
-    ctrl := Parent.Controls[i];
-    isExcluded := False;
-    for j := 0 to Length(ControlsToExclude) - 1 do
-      if ControlsToExclude[j] = ctrl then
-        isExcluded := True;
-    if not isExcluded then
-    begin
-      if ctrl.AlignWithMargins then
-        ctrlHeight := ctrl.Height + ctrl.Margins.Top + ctrl.Margins.Bottom
-      else
-        ctrlHeight := ctrl.Height;
-      sumHeight := sumHeight + ctrlHeight;
-    end;
-  end;
-  Result := sumHeight;
-end;
-
-{ TODO 2: [Helper] Extract into TDBGrid.ForEachRow class helper }
-function AutoSizeColumns(DBGrid: TDBGrid; const MaxRows: Integer = 25): Integer;
-var
-  DataSet: TDataSet;
-  Bookmark: TBookmark;
-  Count, i: Integer;
-  ColumnsWidth: array of Integer;
-begin
-  SetLength(ColumnsWidth, DBGrid.Columns.Count);
-  for i := 0 to DBGrid.Columns.Count - 1 do
-    if DBGrid.Columns[i].Visible then
-      ColumnsWidth[i] := DBGrid.Canvas.TextWidth
-        (DBGrid.Columns[i].title.Caption + '   ')
-    else
-      ColumnsWidth[i] := 0;
-  if DBGrid.DataSource <> nil then
-    DataSet := DBGrid.DataSource.DataSet
-  else
-    DataSet := nil;
-  if (DataSet <> nil) and DataSet.Active then
-  begin
-    Bookmark := DataSet.GetBookmark;
-    DataSet.DisableControls;
-    try
-      Count := 0;
-      DataSet.First;
-      while not DataSet.Eof and (Count < MaxRows) do
-      begin
-        for i := 0 to DBGrid.Columns.Count - 1 do
-          if DBGrid.Columns[i].Visible then
-            ColumnsWidth[i] := Max(ColumnsWidth[i],
-              DBGrid.Canvas.TextWidth(DBGrid.Columns[i].Field.Text + '   '));
-        Inc(Count);
-        DataSet.Next;
-      end;
-    finally
-      DataSet.GotoBookmark(Bookmark);
-      DataSet.FreeBookmark(Bookmark);
-      DataSet.EnableControls;
-    end;
-  end;
-  Count := 0;
-  for i := 0 to DBGrid.Columns.Count - 1 do
-    if DBGrid.Columns[i].Visible then
-    begin
-      DBGrid.Columns[i].Width := ColumnsWidth[i];
-      Inc(Count, ColumnsWidth[i]);
-    end;
-  Result := Count - DBGrid.ClientWidth;
-end;
-
-// ----------------------------------------------------------
-//
-// Function checks is TJsonObject has field and this field has not null value
-//
-{ TODO 2: [Helper] TJSONObject Class helpper and more minigful name expected }
-function fieldAvaliable(jsObject: TJSONObject; const fieldName: string)
-  : Boolean; inline;
-begin
-  Result := Assigned(jsObject.Values[fieldName]) and not jsObject.Values
-    [fieldName].Null;
-end;
-
-{ TODO 2: [Helper] TJSONObject Class helpper and this method has two responsibilities }
-// Warning! In-out var parameter
-// extract separate:  GetIsoDateUtc
-function IsValidIsoDateUtc(jsObj: TJSONObject; const Field: string;
-  var dt: TDateTime): Boolean;
-begin
-  dt := 0;
-  try
-    dt := System.DateUtils.ISO8601ToDate(jsObj.Values[Field].Value, False);
-    Result := True;
-  except
-    on E: Exception do
-      Result := False;
-  end
-end;
-
-{ TODO 2: Move into Utils.General }
-function CheckEmail(const s: string): Boolean;
-const
-  EMAIL_REGEX = '^((?>[a-zA-Z\d!#$%&''*+\-/=?^_`{|}~]+\x20*|"((?=[\x01-\x7f])' +
-    '[^"\\]|\\[\x01-\x7f])*"\x20*)*(?<angle><))?((?!\.)' +
-    '(?>\.?[a-zA-Z\d!#$%&''*+\-/=?^_`{|}~]+)+|"((?=[\x01-\x7f])' +
-    '[^"\\]|\\[\x01-\x7f])*")@(((?!-)[a-zA-Z\d\-]+(?<!-)\.)+[a-zA-Z]' +
-    '{2,}|\[(((?(?<!\[)\.)(25[0-5]|2[0-4]\d|[01]?\d?\d))' +
-    '{4}|[a-zA-Z\d\-]*[a-zA-Z\d]:((?=[\x01-\x7f])[^\\\[\]]|\\' +
-    '[\x01-\x7f])+)\])(?(angle)>)$';
-begin
-  Result := System.RegularExpressions.TRegEx.IsMatch(s, EMAIL_REGEX);
+  AutoSizeBooksGroupBoxes();
 end;
 
 function BooksToDateTime(const s: string): TDateTime;
@@ -229,9 +103,9 @@ const
 var
   m: string;
   y: string;
-  i: Integer;
-  mm: Integer;
-  yy: Integer;
+  i: integer;
+  mm: integer;
+  yy: integer;
 begin
   m := s.Substring(0, 3);
   y := s.Substring(4);
@@ -245,42 +119,31 @@ begin
   Result := EncodeDate(yy, mm, 1);
 end;
 
-{ TODO 2: [A] Method is too large. Comments is showing separate methods }
-procedure TForm1.btnImportClick(Sender: TObject);
+// TODO 3: Move this procedure into class (idea)
+procedure ValidateReport(jsReport: TJSONObject);
 var
-  frm: TFrameImport;
-  tab: TChromeTab;
-  jsData: TJSONArray;
-  DBGrid1: TDBGrid;
-  DataSrc1: TDataSource;
-  DBGrid2: TDBGrid;
-  DataSrc2: TDataSource;
-  i: Integer;
-  jsRow: TJSONObject;
   email: string;
-  firstName: string;
-  lastName: string;
-  company: string;
-  bookISBN: string;
-  bookTitle: string;
-  rating: Integer;
-  oppinion: string;
-  ss: array of string;
-  v: string;
-  dtReported: TDateTime;
-  readerId: Variant;
-  b: TBook;
+begin
+  email := jsReport.Values['email'].Value;
+  if not CheckEmail(email) then
+    raise Exception.Create('Invalid email addres');
+  if not jsReport.FieldIsValidIsoDateUtc('created') then
+    raise Exception.Create('Invalid date. Expected ISO format');
+end;
+
+procedure TForm1.NewBooks_LoadFromWebServiceAndInsert;
+var
   jsBooks: TJSONArray;
   jsBook: TJSONObject;
+  i: integer;
   TextBookReleseDate: string;
   b2: TBook;
+  b: TBook;
 begin
-  // ----------------------------------------------------------
-  // ----------------------------------------------------------
-  //
-  // Import new Books data from OpenAPI
-  //
-  { TODO 2: [A] Extract method. Read comments and use meaningful name }
+  { TODO 3: Two responsibilities in one method. Needs to be separated }
+  // 1) Load new books for Web Service
+  // 2) Import books form JSON
+  // ** 3) Inserting books into DB table :-)
   jsBooks := ImportBooksFromWebService(Client_API_Token);
   try
     for i := 0 to jsBooks.Count - 1 do
@@ -288,7 +151,7 @@ begin
       jsBook := jsBooks.Items[i] as TJSONObject;
       b := TBook.Create;
       b.status := jsBook.Values['status'].Value;
-      b.title := jsBook.Values['title'].Value;
+      b.Title := jsBook.Values['title'].Value;
       b.isbn := jsBook.Values['isbn'].Value;
       b.author := jsBook.Values['author'].Value;
       TextBookReleseDate := jsBook.Values['date'].Value;
@@ -297,8 +160,8 @@ begin
       b.price := StrToCurr(jsBook.Values['price'].Value);
       b.currency := jsBook.Values['currency'].Value;
       b.description := jsBook.Values['description'].Value;
-      b.imported := Now();
-      b2 := FBooksConfig.GetBookList(blAll).FindByISBN(b.isbn);
+      b.imported := Now;
+      b2 := FBooksConfig.GetBookList(blkAll).FindByISBN(b.isbn);
       if not Assigned(b2) then
       begin
         FBooksConfig.InsertNewBook(b);
@@ -306,163 +169,116 @@ begin
         // Append report into the database:
         // Fields: ISBN, Title, Authors, Status, ReleseDate, Pages, Price,
         // Currency, Imported, Description
-        DataModMain.mtabBooks.InsertRecord([b.isbn, b.title, b.author,
-          b.status, b.releseDate, b.pages, b.price, b.currency, b.imported,
+        DataModMain.mtabBooks.InsertRecord([b.isbn, b.Title, b.author, b.status,
+          b.releseDate, b.pages, b.price, b.currency, b.imported,
           b.description]);
       end;
     end;
   finally
     jsBooks.Free;
   end;
-  // ----------------------------------------------------------
-  // ----------------------------------------------------------
-  //
-  // Create new frame, show it add to ChromeTabs
-  // 1. Create TFrameImport.
-  // 2. Embed frame in pnMain (show)
-  // 3. Add new ChromeTab
-  //
-  { TODO 2: [B] Extract method. Read comments and use meaningful }
-  // Look for ChromeTabs1.Tabs.Add for code duplication
-  frm := TFrameImport.Create(pnMain);
-  frm.Parent := pnMain;
-  frm.Visible := True;
-  frm.Align := alClient;
-  tab := ChromeTabs1.Tabs.Add;
-  tab.Caption := 'Readers';
-  tab.Data := frm;
-  // ----------------------------------------------------------
-  // ----------------------------------------------------------
-  //
-  // Dynamically Add TDBGrid to TFrameImport
-  //
-  { TODO 2: [C] Move code down separate bussines logic from GUI }
-  // warning for dataset dependencies, discuss TDBGrid dependencies
-  DataSrc1 := TDataSource.Create(frm);
-  DBGrid1 := TDBGrid.Create(frm);
-  DBGrid1.AlignWithMargins := True;
-  DBGrid1.Parent := frm;
-  DBGrid1.Align := alClient;
-  DBGrid1.DataSource := DataSrc1;
-  DataSrc1.DataSet := DataModMain.mtabReaders;
-  AutoSizeColumns(DBGrid1);
-  // ----------------------------------------------------------
-  // ----------------------------------------------------------
-  //
-  // Import new Reader Reports data from OpenAPI
-  // - Load JSON from WebService
-  // - Validate JSON and insert new a Readers into the Database
-  //
-  jsData := ImportReaderReportsFromWebService(Client_API_Token);
-  { TODO 2: [D] Extract method. Block try-catch is separate responsibility }
+end;
+
+procedure TForm1.ReaderReports_LoadFromWebServiceAndValidateAndInsert();
+var
+  jsReports: TJSONArray;
+  i: integer;
+  jsReport: TJSONObject;
+  email: string;
+  dtReported: TDateTime;
+  firstName: string;
+  lastName: string;
+  company: string;
+  bookISBN: string;
+  bookTitle: string;
+  rating: integer;
+  oppinion: string;
+  ReaderId: Variant;
+  ss: array of string;
+begin
+  jsReports := ImportReaderReportsFromWebService(Client_API_Token);
   try
-    for i := 0 to jsData.Count - 1 do
+    for i := 0 to jsReports.Count - 1 do
     begin
       { TODO 3: [A] Extract Reader Report code into the record TReaderReport (model layer) }
-      { TODO 2: [F] Repeated code. Violation of the DRY rule }
-      // Use TJSONObject helper Values return Variant.Null
+      // ----------------------------------------------------------------
+      jsReport := jsReports.Items[i] as TJSONObject;
+      ValidateReport(jsReport);
       // ----------------------------------------------------------------
       //
       // Read JSON object
       //
       { TODO 3: [A] Move this code into record TReaderReport.LoadFromJSON }
-      jsRow := jsData.Items[i] as TJSONObject;
-      email := jsRow.Values['email'].Value;
-      if fieldAvaliable(jsRow, 'firstname') then
-        firstName := jsRow.Values['firstname'].Value
-      else
-        firstName := '';
-      if fieldAvaliable(jsRow, 'lastname') then
-        lastName := jsRow.Values['lastname'].Value
-      else
-        lastName := '';
-      if fieldAvaliable(jsRow, 'company') then
-        company := jsRow.Values['company'].Value
-      else
-        company := '';
-      if fieldAvaliable(jsRow, 'book-isbn') then
-        bookISBN := jsRow.Values['book-isbn'].Value
-      else
-        bookISBN := '';
-      if fieldAvaliable(jsRow, 'book-title') then
-        bookTitle := jsRow.Values['book-title'].Value
-      else
-        bookTitle := '';
-      if fieldAvaliable(jsRow, 'rating') then
-        rating := (jsRow.Values['rating'] as TJSONNumber).AsInt
+      email := jsReport.Values['email'].Value;
+      firstName := VarToStr(jsReport.ValuesEx['firstname']);
+      lastName := VarToStr(jsReport.ValuesEx['lastname']);
+      company := VarToStr(jsReport.ValuesEx['company']);
+      bookISBN := VarToStr(jsReport.ValuesEx['book-isbn']);
+      bookTitle := VarToStr(jsReport.ValuesEx['book-title']);
+      oppinion := VarToStr(jsReport.ValuesEx['oppinion']);
+      dtReported := jsReport.FieldGetIsoDateUtc('created');
+      if jsReport.FieldHasNotNullValue('rating') then
+        rating := jsReport.Values['rating'].GetValue<integer>()
       else
         rating := -1;
-      if fieldAvaliable(jsRow, 'oppinion') then
-        oppinion := jsRow.Values['oppinion'].Value
-      else
-        oppinion := '';
       // ----------------------------------------------------------------
-      //
-      // Validate imported Reader report
-      //
-      { TODO 2: [E] Move validation up. Before reading data }
-      ValidateBook(jsRow, email, dtReported);
-      // ----------------------------------------------------------------
-      //
-      // Locate book by ISBN
-      //
-      { TODO 2: [G] Extract method }
-      b := FBooksConfig.GetBookList(blAll).FindByISBN(bookISBN);
-      if not Assigned(b) then
-        raise Exception.Create('Invalid book isbn');
-      // ----------------------------------------------------------------
-      // Find the Reader in then database using an email address
-      readerId := DataModMain.FindReaderByEmil(email);
-      // ----------------------------------------------------------------
-      //
-      // Append a new reader into the database if requred:
-      if VarIsNull(readerId) then
-      begin
-        { TODO 2: [G] Extract method }
-        readerId := DataModMain.GetMaxValueInDataSet(DataModMain.mtabReaders,
-          'ReaderId') + 1;
-        //
-        // Fields: ReaderId, FirstName, LastName, Email, Company, BooksRead,
-        // LastReport, ReadersCreated
-        //
-        DataModMain.mtabReaders.AppendRecord([readerId, firstName, lastName,
-          email, company, 1, dtReported, Now()]);
-      end;
+      LocateBookByISBN(bookISBN);
+      ReaderId := DataModMain.FindReaderByEmil(email);
+      if VarIsNull(ReaderId) then
+        ReaderId := InsertReader(firstName, lastName, email, company,
+          dtReported);
       // ----------------------------------------------------------------
       //
       // Append report into the database:
       // Fields: ReaderId, ISBN, Rating, Oppinion, Reported
       //
-      DataModMain.mtabReports.AppendRecord([readerId, bookISBN, rating,
+      DataModMain.mtabReports.AppendRecord([ReaderId, bookISBN, rating,
         oppinion, dtReported]);
       // ----------------------------------------------------------------
-      if FDevMod then
+      if Application.InDeveloperMode then
         Insert([rating.ToString], ss, maxInt);
     end;
     // ----------------------------------------------------------------
-    if FDevMod then
+    if Application.InDeveloperMode then
       Caption := String.Join(' ,', ss);
-    // ----------------------------------------------------------------
-    with TSplitter.Create(frm) do
-    begin
-      Align := alBottom;
-      Parent := frm;
-      Height := 5;
-    end;
-    DBGrid1.Margins.Bottom := 0;
-    DataSrc2 := TDataSource.Create(frm);
-    DBGrid2 := TDBGrid.Create(frm);
-    DBGrid2.AlignWithMargins := True;
-    DBGrid2.Parent := frm;
-    DBGrid2.Align := alBottom;
-    DBGrid2.Height := frm.Height div 3;
-    DBGrid2.DataSource := DataSrc2;
-    DataSrc2.DataSet := DataModMain.mtabReports;
-    DBGrid2.Margins.Top := 0;
-    AutoSizeColumns(DBGrid2);
   finally
-    jsData.Free;
+    jsReports.Free;
   end;
+end;
+
+procedure TForm1.LocateBookByISBN(const bookISBN: string);
+var
+  Book: TBook;
+begin
+  Book := FBooksConfig.GetBookList(blkAll).FindByISBN(bookISBN);
+  if not Assigned(Book) then
+    raise Exception.Create(Format(StrBookIsbnNotFound, [bookISBN]));
+end;
+
+function TForm1.InsertReader(const firstName: string; const lastName: string;
+  const email: string; const company: string;
+  const dtReported: TDateTime): integer;
+var
+  ReaderId: integer;
+begin
+  ReaderId := DataModMain.mtabReaders.GetMaxIntegerValue('ReaderId') + 1;
+  //
+  // Fields: ReaderId, FirstName, LastName, Email, Company, BooksRead,
+  // LastReport, ReadersCreated
+  //
+  DataModMain.mtabReaders.AppendRecord([ReaderId, firstName, lastName, email,
+    company, 1, dtReported, Now]);
+  Result := ReaderId;
+end;
+
+procedure TForm1.btnImportClick(Sender: TObject);
+var
+  frm: TFrameImport;
+begin
+  NewBooks_LoadFromWebServiceAndInsert;
+  frm := CreateAndShowFrame(TFrameImport, 'Readers Report') as TFrameImport;
+  ReaderReports_LoadFromWebServiceAndValidateAndInsert();
+  frm.BuildDBGridsForReadersAndReports();
 end;
 
 procedure TForm1.ChromeTabs1ButtonCloseTabClick(Sender: TObject;
@@ -484,49 +300,23 @@ begin
     obj := TObject(ATab.Data);
     if (TabChangeType = tcActivated) and Assigned(obj) then
     begin
-      HideAllChildFrames(pnMain);
+      pnMain.HideAllChildFrames();
       (obj as TFrame).Visible := True;
     end;
   end;
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
-var
-  Extention: string;
-  ExeName: string;
-  ProjectFileName: string;
 begin
-  // ----------------------------------------------------------
-  // Check: If we are in developer mode
-  //
-  // Developer mode id used to change application configuration
-  // during test
-  { TODO 1: Meaningful name for FDevMod }
-  { TODO 2: [Helper] TApplication.IsDeveloperMode }
-{$IFDEF DEBUG}
-  Extention := '.dpr';
-  ExeName := ExtractFileName(Application.ExeName);
-  ProjectFileName := ChangeFileExt(ExeName, Extention);
-  FDevMod := FileExists(ProjectFileName) or
-    FileExists('..\..\' + ProjectFileName);
-{$ELSE}
-  FDevMod := False;
-{$ENDIF}
   pnMain.Caption := '';
 end;
 
-procedure TForm1.ResizeGroupBox();
+procedure TForm1.AutoSizeBooksGroupBoxes();
 var
-  sum: Integer;
-  avaliable: Integer;
-  labelPixelHeight: Integer;
+  sum: integer;
+  avaliable: integer;
+  labelPixelHeight: integer;
 begin
-  { TODO 1: Commented out function. Just delete it }
-  (*
-    sum := lbxBooksAvaliable.Height + lbxBooksCooming.Height;
-    lbxBooksAvaliable.Height := sum div 2;
-    lbxBooksCooming.Height := sum div 2;
-  *)
   { TODO 3: Move into TBooksListBoxConfigurator }
   with TBitmap.Create do
   begin
@@ -534,7 +324,7 @@ begin
     labelPixelHeight := Canvas.TextHeight('Zg');
     Free;
   end;
-  sum := SumHeightForChildrens(GroupBox1, [lbxBooksReaded, lbxBooksAvaliable2]);
+  sum := GroupBox1.SumHeightForChildrens([lbxBooksReaded, lbxBooksAvaliable2]);
   avaliable := GroupBox1.Height - sum - labelPixelHeight;
   if GroupBox1.AlignWithMargins then
     avaliable := avaliable - GroupBox1.Padding.Top - GroupBox1.Padding.Bottom;
@@ -547,13 +337,20 @@ begin
   lbxBooksReaded.Height := avaliable div 2;
 end;
 
-procedure TForm1.ValidateBook(jsRow: TJSONObject; email: string;
-  dtReported: TDateTime);
+function TForm1.CreateAndShowFrame(FrameClass: TFrameClass;
+  const Title: string): TFrame;
+var
+  tab: TChromeTab;
+  frm: TFrame;
 begin
-  if not CheckEmail(email) then
-    raise Exception.Create('Invalid email addres');
-  if not IsValidIsoDateUtc(jsRow, 'created', dtReported) then
-    raise Exception.Create('Invalid date. Expected ISO format');
+  frm := FrameClass.Create(pnMain);
+  frm.Parent := pnMain;
+  frm.Visible := True;
+  frm.Align := alClient;
+  tab := ChromeTabs1.Tabs.Add;
+  tab.Caption := Title;
+  tab.Data := frm;
+  Result := frm;
 end;
 
 procedure TForm1.Splitter1Moved(Sender: TObject);
@@ -561,47 +358,41 @@ begin
   (Sender as TSplitter).Tag := 1;
 end;
 
+procedure TForm1.CreateBooksGridOnFrame(frm: TFrame;
+  GridAlign: TAlign = alClient);
+var
+  datasrc: TDataSource;
+  DataGrid: TDBGrid;
+begin
+  datasrc := TDataSource.Create(frm);
+  DataGrid := TDBGrid.Create(frm);
+  DataGrid.AlignWithMargins := True;
+  DataGrid.Parent := frm;
+  DataGrid.Align := GridAlign;
+  DataGrid.DataSource := datasrc;
+  datasrc.DataSet := DataModMain.mtabBooks;
+  DataGrid.AutoSizeColumns();
+end;
+
 procedure TForm1.tmrAppReadyTimer(Sender: TObject);
 var
   frm: TFrameWelcome;
-  tab: TChromeTab;
-  VersionNr: Integer;
+  VersionNr: integer;
   msg1: string;
   UserName: string;
   password: string;
   res: Variant;
-  i: Integer;
-  b: TBook;
-  o: Boolean;
-  AllBooks: TBookCollection;
-  OtherBooks: TBookCollection;
-  booksCfg: TBooksListBoxConfigurator;
-  datasrc: TDataSource;
-  DataGrid: TDBGrid;
 begin
   tmrAppReady.Enabled := False;
-  if FDevMod then
+  if Application.InDeveloperMode then
     ReportMemoryLeaksOnShutdown := True;
-  // ----------------------------------------------------------
-  // ----------------------------------------------------------
-  //
-  // Create and show Welcome Frame
-  //
-  { TODO 2: [B] Extract method. Read comments and use meaningful }
-  frm := TFrameWelcome.Create(pnMain);
-  frm.Parent := pnMain;
-  frm.Visible := True;
-  frm.Align := alClient;
-  tab := ChromeTabs1.Tabs.Add;
-  tab.Caption := 'Welcome';
-  tab.Data := frm;
+  frm := CreateAndShowFrame(TFrameWelcome, 'Welcome') as TFrameWelcome;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
   // Connect to database server
   // Check application user and database structure (DB version)
   //
-  isDatabaseOK := False;
   try
     UserName := FDManager.ConnectionDefs.ConnectionDefByName
       (FDConnection1.ConnectionDefName).Params.UserName;
@@ -624,9 +415,7 @@ begin
     end;
   end;
   try
-    { TODO 1: SQL commands inlined - extract as constants }
-    // SQL_SELELECT: DatabaseVersion
-    res := FDConnection1.ExecSQLScalar('SELECT versionnr FROM DBInfo');
+    res := FDConnection1.ExecSQLScalar(SQL_SELECT_DatabaseVersion);
   except
     on E: EFDDBEngineException do
     begin
@@ -638,7 +427,7 @@ begin
   end;
   VersionNr := res;
   if VersionNr = ExpectedDatabaseVersionNr then
-    isDatabaseOK := True
+    { TODO 99: Why the application is doing nothing when we successfully connected into the database }
   else
   begin
     frm.AddInfo(0, StrNotSupportedDBVersion, True);
@@ -662,23 +451,8 @@ begin
   FBooksConfig := TBooksListBoxConfigurator.Create(self);
   FBooksConfig.PrepareListBoxes(lbxBooksReaded, lbxBooksAvaliable2);
   // ----------------------------------------------------------
-  // ----------------------------`------------------------------
-  //
-  // Create Books Grid for Quality Tests
-  { TODO 1: Commented out function. It's usefull. Define global variable }
-  {
-  if FDevMod then
-  begin
-    datasrc := TDataSource.Create(frm);
-    DataGrid := TDBGrid.Create(frm);
-    DataGrid.AlignWithMargins := True;
-    DataGrid.Parent := frm;
-    DataGrid.Align := alClient;
-    DataGrid.DataSource := datasrc;
-    datasrc.DataSet := DataModMain.mtabBooks;
-    AutoSizeColumns(DataGrid);
-  end;
-  }
+  if Application.InDeveloperMode and InInternalQualityMode then
+    CreateBooksGridOnFrame(frm);
 end;
 
 end.

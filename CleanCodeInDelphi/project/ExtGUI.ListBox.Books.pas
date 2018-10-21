@@ -4,9 +4,7 @@ interface
 
 uses
   System.Classes, Vcl.StdCtrls, Vcl.Controls, System.Types, Vcl.Graphics,
-  Vcl.ComCtrls, { TODO 1 : [0]  Remove unit Vcl.ComCtrls }
   Winapi.Windows,
-  System.SysUtils,  { TODO 1 : [0]  Remove unit System.SysUtils }
   System.JSON, System.Generics.Collections,
   DataAccess.Books;
 
@@ -34,8 +32,7 @@ type
   end;
 
 type
-  { TODO 1: Incorrect prefix. Should be blk }
-  TBookListKind = (blAll, blOnShelf, blAvaliable);
+  TBookListKind = (blkAll, blkOnShelf, blkAvaliable);
 
 type
   { TODO 3: Too many responsibilities. Separate GUI from structures  }
@@ -55,6 +52,8 @@ type
       State: TDragState; var Accept: Boolean);
     procedure EventOnDrawItem(Control: TWinControl; Index: integer; Rect: TRect;
       State: TOwnerDrawState);
+    procedure AddBookToProperListByStatus(b: TBook);
+    procedure SetupListBoxPropertiesAndEvents(lbx: TListBox);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -68,16 +67,10 @@ type
 implementation
 
 uses
-  ClientAPI.Books, { TODO 1 : [0]  Remove unit ClientAPI.Books }
   DataAccess.Books.FireDAC, Data.Main;
-
-const
-  { TODO 1 : [0] Remove const Books_API_Token }
-  Books_API_Token = 'BOOKS-arg58d8jmefcu5-1fceb';
 
 constructor TBooksListBoxConfigurator.Create(AOwner: TComponent);
 var
-  OtherBooks: TBookCollection;
   b: TBook;
   BooksDAO: IBooksDAO;
 begin
@@ -91,12 +84,7 @@ begin
   FBooksOnShelf := TBookCollection.Create(false);
   FBooksAvaliable := TBookCollection.Create(false);
   for b in FAllBooks do
-  begin
-    if b.status = 'on-shelf' then
-      FBooksOnShelf.Add(b)
-    else if b.status = 'avaliable' then
-      FBooksAvaliable.Add(b)
-  end;
+    AddBookToProperListByStatus(b);
 end;
 
 destructor TBooksListBoxConfigurator.Destroy;
@@ -107,30 +95,47 @@ begin
   inherited;
 end;
 
-function TBooksListBoxConfigurator.GetBookList (kind: TBookListKind): 
+function TBooksListBoxConfigurator.GetBookList (kind: TBookListKind):
   TBookCollection;
 begin
   case kind of
-    blAll: Result := FAllBooks;
-    blOnShelf: Result := FBooksOnShelf;
-    blAvaliable: Result := FBooksAvaliable;
+    blkAll: Result := FAllBooks;
+    blkOnShelf: Result := FBooksOnShelf;
+    blkAvaliable: Result := FBooksAvaliable
+    else Result := nil;
   end;
 end;
 
 procedure TBooksListBoxConfigurator.InsertNewBook(b: TBook);
 begin
   FAllBooks.Add(b);
-  { TODO 2: [A] Code duplication, look on the TBooksListBoxConfigurator.Create }
+  AddBookToProperListByStatus(b);
+  FListBoxAvaliable.AddItem(b.title,b);
+end;
+
+procedure TBooksListBoxConfigurator.AddBookToProperListByStatus(b: TBook);
+begin
   if b.status = 'on-shelf' then
     FBooksOnShelf.Add(b)
   else if b.status = 'avaliable' then
     FBooksAvaliable.Add(b);
-  FListBoxAvaliable.AddItem(b.title,b);
 end;
 
 function TBooksListBoxConfigurator.FindBook (isbn: string): TBook;
 begin
   Result := FAllBooks.FindByISBN (isbn);
+end;
+
+procedure TBooksListBoxConfigurator.SetupListBoxPropertiesAndEvents(
+  lbx: TListBox);
+begin
+  FListBoxOnShelf.OnDragDrop := EventOnDragDrop;
+  FListBoxOnShelf.OnDragOver := EventOnDragOver;
+  FListBoxOnShelf.OnStartDrag := EventOnStartDrag;
+  FListBoxOnShelf.OnDrawItem := EventOnDrawItem;
+  FListBoxOnShelf.Style := lbOwnerDrawFixed;
+  FListBoxOnShelf.DragMode := dmAutomatic;
+  FListBoxOnShelf.ItemHeight := 50;
 end;
 
 procedure TBooksListBoxConfigurator.PrepareListBoxes(lbxOnShelf,
@@ -140,30 +145,12 @@ var
 begin
   FListBoxOnShelf := lbxOnShelf;
   FListBoxAvaliable := lbxAvaliable;
-  { TODO 2: Repeated code. Violation of the DRY rule }
-  // New private method: SetupListBox
-  // -----------------------------------------------------------------
-  // ListBox: books on the shelf
   for b in FBooksOnShelf do
     FListBoxOnShelf.AddItem(b.title, b);
-  FListBoxOnShelf.OnDragDrop := EventOnDragDrop;
-  FListBoxOnShelf.OnDragOver := EventOnDragOver;
-  FListBoxOnShelf.OnStartDrag := EventOnStartDrag;
-  FListBoxOnShelf.OnDrawItem := EventOnDrawItem;
-  FListBoxOnShelf.Style := lbOwnerDrawFixed;
-  FListBoxOnShelf.DragMode := dmAutomatic;
-  FListBoxOnShelf.ItemHeight := 50;
-  // -----------------------------------------------------------------
-  // ListBox: books avaliable
   for b in FBooksAvaliable do
     FListBoxAvaliable.AddItem(b.title, b);
-  FListBoxAvaliable.OnDragDrop := EventOnDragDrop;
-  FListBoxAvaliable.OnDragOver := EventOnDragOver;
-  FListBoxAvaliable.OnStartDrag := EventOnStartDrag;
-  FListBoxAvaliable.OnDrawItem := EventOnDrawItem;
-  FListBoxAvaliable.Style := lbOwnerDrawFixed;
-  FListBoxAvaliable.DragMode := dmAutomatic;
-  FListBoxAvaliable.ItemHeight := 50;
+  SetupListBoxPropertiesAndEvents(FListBoxOnShelf);
+  SetupListBoxPropertiesAndEvents(FListBoxAvaliable);
 end;
 
 procedure TBooksListBoxConfigurator.EventOnStartDrag(Sender: TObject;
@@ -283,15 +270,12 @@ end;
 
 function TBookCollection.FindByISBN (const ISBN: string): TBook;
 var
-  i: Integer;
+  b: TBook;
 begin
-  { TODO 1: Dijkstra structural programming rule violation }
-  { TODO 1: More readable code for b in Items do. Shorter method }
-  // Dijkstra: one entrance and one exit
-  for i := 0 to Self.Count-1 do
-    if Self.Items[i].isbn = ISBN then
+  for b in Self do
+    if b.isbn = ISBN then
     begin
-      Result := Self.Items[i];
+      Result := b;
       exit;
     end;
   Result := nil;
