@@ -96,22 +96,6 @@ begin
   AutoSizeBooksGroupBoxes();
 end;
 
-{ TODO 2: [Helper] TJSONObject Class helpper and this method has two responsibilities }
-// Warning! In-out var parameter
-// extract separate:  GetIsoDateUtc
-function IsValidIsoDateUtc(jsObj: TJSONObject; const Field: string;
-  var dt: TDateTime): Boolean;
-begin
-  dt := 0;
-  try
-    dt := System.DateUtils.ISO8601ToDate(jsObj.Values[Field].Value, False);
-    Result := True;
-  except
-    on E: Exception do
-      Result := False;
-  end
-end;
-
 { TODO 2: Move into Utils.General }
 function CheckEmail(const s: string): Boolean;
 const
@@ -150,12 +134,14 @@ begin
 end;
 
 // TODO 3: Move this procedure into class (idea)
-procedure ValidateReport(jsRow: TJSONObject; email: string;
-  var dtReported: TDateTime);
+procedure ValidateReport(jsReport: TJSONObject);
+var
+  email: string;
 begin
+  email := jsReport.Values['email'].Value;
   if not CheckEmail(email) then
     raise Exception.Create('Invalid email addres');
-  if not IsValidIsoDateUtc(jsRow, 'created', dtReported) then
+  if not jsReport.FieldIsValidIsoDateUtc('created') then
     raise Exception.Create('Invalid date. Expected ISO format');
 end;
 
@@ -231,24 +217,20 @@ begin
       { TODO 3: [A] Extract Reader Report code into the record TReaderReport (model layer) }
       // ----------------------------------------------------------------
       jsReport := jsReports.Items[i] as TJSONObject;
-      email := jsReport.Values['email'].Value;
-      // ----------------------------------------------------------------
-      //
-      // Validate imported Reader report
-      //
-      { TODO 2: email is not required as an parameter. Remove it latter }
-      ValidateReport(jsReport, email, dtReported);
+      ValidateReport(jsReport);
       // ----------------------------------------------------------------
       //
       // Read JSON object
       //
       { TODO 3: [A] Move this code into record TReaderReport.LoadFromJSON }
+      email := jsReport.Values['email'].Value;
       firstName := VarToStr(jsReport.ValuesEx['firstname']);
       lastName := VarToStr(jsReport.ValuesEx['lastname']);
       company := VarToStr(jsReport.ValuesEx['company']);
       bookISBN := VarToStr(jsReport.ValuesEx['book-isbn']);
       bookTitle := VarToStr(jsReport.ValuesEx['book-title']);
       oppinion := VarToStr(jsReport.ValuesEx['oppinion']);
+      dtReported := jsReport.FieldGetIsoDateUtc('created');
       if jsReport.FieldHasNotNullValue('rating') then
         rating := jsReport.Values['rating'].GetValue<integer>()
       else

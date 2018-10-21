@@ -12,6 +12,8 @@ type
     procedure SetValuesEx(const Name: string; Value: Variant);
   public
     function FieldHasNotNullValue(const fieldName: string): Boolean;
+    function FieldGetIsoDateUtc(const Name: string): TDateTime;
+    function FieldIsValidIsoDateUtc(const Name: string): Boolean;
     { TODO : Add XML Documentation summary at least }
     property ValuesEx[const Name: string]: Variant read GetValuesEx
       write SetValuesEx;
@@ -20,7 +22,7 @@ type
 implementation
 
 uses
-  System.SysUtils;
+  System.SysUtils, System.DateUtils;
 
 // ----------------------------------------------------------
 //
@@ -49,5 +51,23 @@ begin
   { TODO : Not implemented yet }
   raise Exception.Create('Internal developer error. Not implemented yet');
 end;
+
+function THelperJSONObject.FieldIsValidIsoDateUtc(const Name: string): Boolean;
+begin
+  try
+    System.DateUtils.ISO8601ToDate(self.Values[Name].Value, False);
+    Result := True;
+  except
+    on E: Exception do
+      Result := False;
+  end
+end;
+
+function THelperJSONObject.FieldGetIsoDateUtc(const Name: string): TDateTime;
+begin
+  Result := System.DateUtils.ISO8601ToDate(self.Values[Name].Value, False);
+end;
+
+
 
 end.
