@@ -27,7 +27,8 @@ uses
   Helper.TJSONObject in 'Helper.TJSONObject.pas',
   Helper.TDataSet in 'Helper.TDataSet.pas',
   Helper.DBGrid in 'Helper.DBGrid.pas',
-  Helper.Application in 'Helper.Application.pas';
+  Helper.Application in 'Helper.Application.pas',
+  Helper.TWinControl in 'Helper.TWinControl.pas';
 
 {$R *.res}
 

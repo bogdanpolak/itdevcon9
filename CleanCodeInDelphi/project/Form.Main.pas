@@ -64,7 +64,8 @@ uses
   System.RegularExpressions, System.JSON,
   Frame.Welcome, Consts.Application, Utils.CipherAES128, Frame.Import,
   Utils.General, Data.Main, ClientAPI.Readers, ClientAPI.Books, Consts.SQL,
-  Helper.TJSONObject, Helper.TDataSet, Helper.DBGrid, Helper.Application;
+  Helper.TJSONObject, Helper.TDataSet, Helper.DBGrid, Helper.Application,
+  Helper.TWinControl;
 
 const
   SecureKey = 'delphi-is-the-best';
@@ -93,37 +94,6 @@ end;
 procedure TForm1.FormResize(Sender: TObject);
 begin
   AutoSizeBooksGroupBoxes();
-end;
-
-{ TODO 2: [Helper] TWinControl class helper }
-function SumHeightForChildrens(Parent: TWinControl;
-  ControlsToExclude: TArray<TControl>): integer;
-var
-  i: integer;
-  ctrl: Vcl.Controls.TControl;
-  isExcluded: Boolean;
-  j: integer;
-  sumHeight: integer;
-  ctrlHeight: integer;
-begin
-  sumHeight := 0;
-  for i := 0 to Parent.ControlCount - 1 do
-  begin
-    ctrl := Parent.Controls[i];
-    isExcluded := False;
-    for j := 0 to Length(ControlsToExclude) - 1 do
-      if ControlsToExclude[j] = ctrl then
-        isExcluded := True;
-    if not isExcluded then
-    begin
-      if ctrl.AlignWithMargins then
-        ctrlHeight := ctrl.Height + ctrl.Margins.Top + ctrl.Margins.Bottom
-      else
-        ctrlHeight := ctrl.Height;
-      sumHeight := sumHeight + ctrlHeight;
-    end;
-  end;
-  Result := sumHeight;
 end;
 
 { TODO 2: [Helper] TJSONObject Class helpper and this method has two responsibilities }
@@ -397,7 +367,7 @@ begin
     obj := TObject(ATab.Data);
     if (TabChangeType = tcActivated) and Assigned(obj) then
     begin
-      HideAllChildFrames(pnMain);
+      pnMain.HideAllChildFrames();
       (obj as TFrame).Visible := True;
     end;
   end;
@@ -421,7 +391,7 @@ begin
     labelPixelHeight := Canvas.TextHeight('Zg');
     Free;
   end;
-  sum := SumHeightForChildrens(GroupBox1, [lbxBooksReaded, lbxBooksAvaliable2]);
+  sum := GroupBox1.SumHeightForChildrens([lbxBooksReaded, lbxBooksAvaliable2]);
   avaliable := GroupBox1.Height - sum - labelPixelHeight;
   if GroupBox1.AlignWithMargins then
     avaliable := avaliable - GroupBox1.Padding.Top - GroupBox1.Padding.Bottom;
