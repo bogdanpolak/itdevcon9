@@ -91,8 +91,8 @@ end;
 
 procedure TDataModMain.OpenDataSets;
 begin
-  OpenMemDataSet('json\dbtable-readers.json', mtabReaders);
-  OpenMemDataSet('json\dbtable-books.json',mtabBooks);
+  OpenMemDataSet(mtabReaders, 'json\dbtable-readers.json');
+  OpenMemDataSet(mtabBooks, 'json\dbtable-books.json');
   mtabReports.CreateDataSet;
 end;
 

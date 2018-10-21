@@ -13,7 +13,7 @@ type
 implementation
 
 uses
-  Data.DB, System.Math;
+  Data.DB, System.Math, System.Classes;
 
 function THelperDBGrid.AutoSizeColumns (const MaxRows: integer = 25): integer;
 var

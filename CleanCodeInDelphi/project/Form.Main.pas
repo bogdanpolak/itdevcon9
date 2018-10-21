@@ -268,12 +268,12 @@ begin
   //
   DataModMain.mtabReaders.AppendRecord([ReaderId, firstName, lastName, email,
     company, 1, dtReported, Now]);
+  Result := ReaderId;
 end;
 
 procedure TForm1.btnImportClick(Sender: TObject);
 var
   frm: TFrameImport;
-  tab: TChromeTab;
 begin
   NewBooks_LoadFromWebServiceAndInsert;
   frm := CreateAndShowFrame(TFrameImport, 'Readers Report') as TFrameImport;
