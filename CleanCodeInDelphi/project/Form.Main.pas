@@ -427,7 +427,7 @@ begin
   end;
   VersionNr := res;
   if VersionNr = ExpectedDatabaseVersionNr then
-    { TODO: Why the application is doing nothing when we successfully connected into the database }
+    { TODO 99: Why the application is doing nothing when we successfully connected into the database }
   else
   begin
     frm.AddInfo(0, StrNotSupportedDBVersion, True);

@@ -7,7 +7,7 @@ uses
 
 type
   THelperApplication = class helper for TApplication
-    { TODO : XML Documentation is required }
+    { TODO 99: XML Documentation is required }
     function InDeveloperMode: boolean;
   end;
 

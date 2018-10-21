@@ -14,7 +14,7 @@ type
     function FieldHasNotNullValue(const fieldName: string): Boolean;
     function FieldGetIsoDateUtc(const Name: string): TDateTime;
     function FieldIsValidIsoDateUtc(const Name: string): Boolean;
-    { TODO : Add XML Documentation summary at least }
+    { TODO 99: Add XML Documentation summary at least }
     property ValuesEx[const Name: string]: Variant read GetValuesEx
       write SetValuesEx;
   end;
@@ -48,7 +48,7 @@ end;
 
 procedure THelperJSONObject.SetValuesEx(const Name: string; Value: Variant);
 begin
-  { TODO : Not implemented yet }
+  { TODO 99: Not implemented yet. Implement as fast as it will be possible }
   raise Exception.Create('Internal developer error. Not implemented yet');
 end;
 
